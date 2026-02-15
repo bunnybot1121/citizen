@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, ArrowLeft } from 'lucide-react';
+import { Shield, ArrowLeft, ArrowRight, Loader } from 'lucide-react';
 import { verifyOTP, sendOTP } from '../services/auth.service';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import { Button } from '../components/ui';
 
 export default function OTPPage() {
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -88,31 +89,36 @@ export default function OTPPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-600 via-blue-700 to-blue-900">
-            <div className="min-h-screen flex items-center justify-center p-4">
-                <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden">
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-8 text-white">
-                        <button
-                            onClick={() => navigate('/login')}
-                            className="mb-4 flex items-center gap-2 text-blue-100 hover:text-white transition-colors"
-                        >
-                            <ArrowLeft className="w-5 h-5" />
-                            <span>Back</span>
-                        </button>
-                        <div className="text-center">
-                            <Shield className="w-16 h-16 mx-auto mb-4" />
-                            <h1 className="text-3xl font-bold mb-2">Verify OTP</h1>
-                            <p className="text-blue-100">
-                                Enter the 6-digit code sent to<br />
-                                <span className="font-semibold">{phone}</span>
-                            </p>
+        <div className="min-h-screen bg-warm-100 flex flex-col items-center justify-center p-6 relative overflow-hidden">
+            {/* Background Decorations */}
+            <div className="absolute top-0 left-0 w-full h-1/2 bg-gradient-to-b from-brand-100/50 to-transparent pointer-events-none" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-64 h-64 bg-secondary-200/30 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="w-full max-w-sm relative z-10">
+                {/* Back Button */}
+                <button
+                    onClick={() => navigate('/login')}
+                    className="mb-8 flex items-center gap-2 text-slate-500 hover:text-brand-600 transition-colors font-medium"
+                >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>Back to Login</span>
+                </button>
+
+                {/* Card */}
+                <div className="bg-white p-8 rounded-[2rem] shadow-card border border-warm-200/50">
+                    <div className="mb-8 text-center">
+                        <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-100">
+                            <Shield className="w-8 h-8 text-brand-600" />
                         </div>
+                        <h1 className="text-2xl font-bold font-heading text-slate-900 mb-2">Verify OTP</h1>
+                        <p className="text-slate-500 text-sm">
+                            We sent a 6-digit code to<br />
+                            <span className="font-bold text-slate-800">{phone}</span>
+                        </p>
                     </div>
 
-                    {/* OTP Input */}
-                    <div className="p-8">
-                        <div className="flex gap-3 justify-center mb-6">
+                    <div className="space-y-8">
+                        <div className="flex gap-2 justify-center">
                             {otp.map((digit, index) => (
                                 <input
                                     key={index}
@@ -123,41 +129,47 @@ export default function OTPPage() {
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
-                                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
+                                    className="w-10 h-14 text-center text-2xl font-heading font-bold bg-warm-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all text-slate-900 caret-brand-500"
                                     disabled={loading}
                                     autoFocus={index === 0}
                                 />
                             ))}
                         </div>
 
-                        <button
-                            onClick={() => handleVerify()}
-                            disabled={loading || otp.some(d => d === '')}
-                            className="w-full bg-blue-600 text-white py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-all active:scale-95"
-                        >
-                            {loading ? (
-                                <div className="flex items-center justify-center gap-2">
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    <span>Verifying...</span>
-                                </div>
-                            ) : (
-                                'Verify & Continue'
-                            )}
-                        </button>
+                        <div className="space-y-4">
+                            <Button
+                                onClick={() => handleVerify()}
+                                disabled={loading || otp.some(d => d === '')}
+                                size="lg"
+                                className="w-full h-14 rounded-xl text-lg shadow-lg shadow-brand-500/20"
+                            >
+                                {loading ? (
+                                    <>
+                                        <Loader className="w-5 h-5 animate-spin" />
+                                        <span>Verifying...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Verify & Continue</span>
+                                        <ArrowRight className="w-5 h-5" />
+                                    </>
+                                )}
+                            </Button>
 
-                        <div className="mt-6 text-center">
-                            {resendTimer > 0 ? (
-                                <p className="text-gray-600">
-                                    Resend OTP in <span className="font-semibold text-blue-600">{resendTimer}s</span>
-                                </p>
-                            ) : (
-                                <button
-                                    onClick={handleResend}
-                                    className="text-blue-600 font-semibold hover:underline"
-                                >
-                                    Resend OTP
-                                </button>
-                            )}
+                            <div className="text-center">
+                                {resendTimer > 0 ? (
+                                    <p className="text-slate-400 text-sm font-medium">
+                                        Resend code in <span className="text-brand-600">{resendTimer}s</span>
+                                    </p>
+                                ) : (
+                                    <button
+                                        onClick={handleResend}
+                                        className="text-brand-600 font-bold text-sm hover:underline"
+                                    >
+                                        Resend Code
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

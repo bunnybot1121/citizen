@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Bell } from 'lucide-react';
+import { Search, Bell, Filter, Grid, List as ListIcon } from 'lucide-react';
 import StatsGrid from '../components/community/StatsGrid';
 import IssueCard from '../components/community/IssueCard';
 import { supabase } from '../services/supabase';
+import { Button, Input } from '../components/ui';
 
 const MOCK_ISSUES = [
     {
@@ -13,7 +14,9 @@ const MOCK_ISSUES = [
         upvotes_count: 142,
         comments_count: 24,
         location: { address: "MG Road Metro Station" },
-        photo: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80"
+        photo: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80",
+        author: { name: "Ravi Kumar" },
+        created_at: new Date().toISOString()
     },
     {
         id: 2,
@@ -23,7 +26,8 @@ const MOCK_ISSUES = [
         upvotes_count: 67,
         comments_count: 8,
         location: { address: "Sector 4, Central Park" },
-        // photo: "https://images.unsplash.com/photo-15555" // Placeholder
+        author: { name: "Anjali Singh" },
+        created_at: new Date(Date.now() - 86400000).toISOString()
     },
     {
         id: 3,
@@ -33,93 +37,108 @@ const MOCK_ISSUES = [
         upvotes_count: 214,
         comments_count: 52,
         location: { address: "North Road Overpass" },
-        photo: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&q=80"
+        photo: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&q=80",
+        author: { name: "Vikram Malhotra" },
+        created_at: new Date(Date.now() - 172800000).toISOString()
     }
 ];
 
 export default function CommunityPage() {
     const [issues, setIssues] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [viewMode, setViewMode] = useState('grid');
+    const [filter, setFilter] = useState('All');
 
     useEffect(() => {
         // Fetch real issues or use mock for now
-        // In real app: fetchIssues();
         setIssues(MOCK_ISSUES);
         setLoading(false);
     }, []);
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
+        <div className="min-h-screen bg-warm-100 pb-24">
             {/* Top Navigation */}
-            <div className="sticky top-0 z-30 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
+            <div className="sticky top-0 z-30 bg-warm-100/90 backdrop-blur-md px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        NagarSevak AI
+                    <h1 className="text-2xl font-extrabold font-heading text-slate-900 tracking-tight">
+                        Community
                     </h1>
-                    <div className="hidden md:flex gap-2">
-                        {['Live Issues', 'Analytics', 'My Ward'].map(tab => (
-                            <button key={tab} className="px-4 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                                {tab}
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <button className="w-10 h-10 rounded-full bg-white border border-warm-200 flex items-center justify-center text-slate-600 hover:bg-warm-50 transition-colors relative">
+                        <Bell className="w-5 h-5" />
+                        <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                    </button>
+                    <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+                        <img src={`https://ui-avatars.com/api/?name=Citizen&background=E07A5F&color=fff`} alt="Profile" />
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-8">
+                {/* Search & Filter */}
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="Search issues by area, type..."
+                            className="w-full bg-white pl-12 pr-4 py-3.5 rounded-2xl border border-warm-200 focus:border-brand-300 focus:ring-2 focus:ring-brand-200 outline-none transition-all shadow-soft"
+                        />
+                    </div>
+                    <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-warm-200 shadow-soft w-fit">
+                        {['All', 'Trending', 'Near Me'].map(f => (
+                            <button
+                                key={f}
+                                onClick={() => setFilter(f)}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f ? 'bg-brand-100 text-brand-700 shadow-sm' : 'text-slate-500 hover:bg-warm-50'}`}
+                            >
+                                {f}
                             </button>
                         ))}
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="hidden md:flex relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                        <input
-                            type="text"
-                            placeholder="Filter by area or type..."
-                            className="bg-gray-100 pl-10 pr-4 py-2 rounded-full text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-100"
-                        />
-                    </div>
-                    <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 relative">
-                        <Bell size={20} className="text-gray-600" />
-                        <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                    </button>
-                    <div className="w-9 h-9 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full border-2 border-white shadow-sm overflow-hidden">
-                        <img src="https://ui-avatars.com/api/?name=Admin+User" alt="Profile" />
-                    </div>
-                </div>
-            </div>
-
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-                {/* Header Section */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Community Action Dashboard</h2>
-                        <p className="text-gray-500 mt-1">Quickly scan and act on local civic issues</p>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-                        <div className="flex -space-x-2">
-                            {[1, 2, 3].map(i => (
-                                <div key={i} className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white"></div>
-                            ))}
-                        </div>
-                        <span className="text-xs font-bold text-gray-600">+12 Citizens active now</span>
-                    </div>
-                </div>
-
                 {/* Statistics */}
-                <StatsGrid stats={{ total: 24, pending: 18, resolved: 9 }} />
+                <StatsGrid stats={{ total: 1240, pending: 85, resolved: 1155 }} />
 
                 {/* Issues Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {issues.map(issue => (
-                        <IssueCard key={issue.id} issue={issue} />
-                    ))}
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-bold font-heading text-slate-900">Top Reports</h2>
+                        <div className="flex gap-2 text-slate-400">
+                            <button
+                                onClick={() => setViewMode('grid')}
+                                className={`p-2 rounded-lg transition-colors ${viewMode === 'grid' ? 'bg-white text-brand-600 shadow-sm' : 'hover:bg-warm-200'}`}
+                            >
+                                <Grid className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => setViewMode('list')}
+                                className={`p-2 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white text-brand-600 shadow-sm' : 'hover:bg-warm-200'}`}
+                            >
+                                <ListIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
 
-                    {/* Skeleton Loading (Mock) */}
-                    {loading && [1, 2, 3].map(i => (
-                        <div key={i} className="h-96 bg-gray-200 rounded-2xl animate-pulse"></div>
-                    ))}
-                </div>
+                    <div className={`grid gap-6 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                        {issues.map(issue => (
+                            <IssueCard key={issue.id} issue={issue} viewMode={viewMode} />
+                        ))}
 
-                <div className="mt-12 text-center">
-                    <button className="bg-white border border-gray-300 text-gray-700 px-8 py-3 rounded-full font-bold shadow-sm hover:shadow-md transition-all active:scale-95">
-                        ↻ Load More Community Issues
-                    </button>
+                        {/* Skeleton Loading (Mock) */}
+                        {loading && [1, 2, 3].map(i => (
+                            <div key={i} className="h-64 bg-white rounded-3xl animate-pulse"></div>
+                        ))}
+                    </div>
+
+                    <div className="mt-8 text-center">
+                        <Button variant="outline" className="bg-white border-warm-200 text-slate-600 hover:bg-warm-50">
+                            Load More Reports
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>

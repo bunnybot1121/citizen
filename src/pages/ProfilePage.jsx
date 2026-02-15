@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Crown, LogOut, CheckCircle } from 'lucide-react';
+import { Crown, LogOut, CheckCircle2, Shield, Settings, MapPin, Edit2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import SubmittedIssuesList from '../components/profile/SubmittedIssuesList';
 import ProfileSettings from '../components/profile/ProfileSettings';
+import { Button } from '../components/ui';
 
 export default function ProfilePage() {
     const { citizen, logout } = useAuth();
@@ -23,7 +24,7 @@ export default function ProfilePage() {
             id: 'REP-8841',
             title: "Broken Streetlight (No. 42)",
             status: "Resolved",
-            photo: "https://images.unsplash.com/photo-15555" // Placeholder
+            photo: null
         },
         {
             id: 'REP-8722',
@@ -41,72 +42,74 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
-            {/* Top Banner */}
-            <div className="bg-white px-6 py-4 shadow-sm flex items-center justify-between sticky top-0 z-20">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                        <Crown size={20} />
+        <div className="min-h-screen bg-warm-100 pb-24">
+            {/* Profile Header */}
+            <div className="bg-white pb-8 pt-12 px-6 rounded-b-[3rem] shadow-soft border-b border-warm-200 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-brand-600 to-brand-700 pointer-events-none" />
+
+                <div className="max-w-7xl mx-auto relative z-10">
+                    <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
+                        <div className="relative group">
+                            <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden relative bg-slate-200">
+                                <img
+                                    src={`https://ui-avatars.com/api/?name=${citizen?.name || 'Citizen'}&background=random&size=200`}
+                                    alt="Profile"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div className="absolute bottom-1 right-1 bg-green-500 text-white p-1.5 rounded-full border-4 border-white shadow-sm" title="Verified Citizen">
+                                <CheckCircle2 size={16} strokeWidth={3} />
+                            </div>
+                        </div>
+
+                        <div className="flex-1 text-center md:text-left mb-2">
+                            <h1 className="text-3xl font-bold font-heading text-slate-900 mb-1">{citizen?.name || 'Rahul Deshmukh'}</h1>
+                            <div className="flex items-center justify-center md:justify-start gap-2 text-slate-500 mb-4">
+                                <MapPin size={16} />
+                                <span className="text-sm font-medium">Shivajinagar, Pune</span>
+                            </div>
+
+                            <div className="flex flex-wrap justify-center md:justify-start gap-3">
+                                <div className="bg-brand-50 text-brand-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-brand-100 flex items-center gap-2">
+                                    <Shield size={14} />
+                                    Citizen ID: #PNE-402
+                                </div>
+                                <div className="bg-slate-100 text-slate-600 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide border border-slate-200">
+                                    {myIssues.length} Reports Submitted
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-warm-200 text-slate-600 bg-white shadow-sm"
+                                onClick={handleLogout}
+                            >
+                                <LogOut size={16} />
+                                <span className="hidden md:inline">Logout</span>
+                            </Button>
+                            <Button onClick={() => navigate('/report')} size="lg" className="rounded-xl shadow-lg shadow-brand-500/20">
+                                New Report
+                            </Button>
+                        </div>
                     </div>
-                    <span className="font-bold text-gray-900 text-lg">NagarSevak AI</span>
-                </div>
-                <div className="flex gap-4 text-sm font-medium text-gray-500">
-                    <span className="hover:text-blue-600 cursor-pointer">Dashboard</span>
-                    <span className="hover:text-blue-600 cursor-pointer">Public Reports</span>
-                    <button onClick={handleLogout} className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-200 transition-colors">
-                        <LogOut size={16} />
-                        Logout
-                    </button>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-                {/* Profile Header */}
-                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
-                    <div className="flex items-center gap-6">
-                        <div className="relative">
-                            <img
-                                src="https://ui-avatars.com/api/?name=Rahul+Deshmukh&background=random&size=128"
-                                alt="Profile"
-                                className="w-24 h-24 rounded-full border-4 border-white shadow-lg"
-                            />
-                            <div className="absolute bottom-0 right-0 bg-green-500 text-white p-1 rounded-full border-2 border-white">
-                                <CheckCircle size={16} />
-                            </div>
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-bold text-gray-900">Rahul Deshmukh</h1>
-                            <div className="flex items-center gap-2 text-gray-500 mt-1">
-                                <span className="text-sm">📍 Shivajinagar, Pune</span>
-                            </div>
-                            <div className="flex gap-3 mt-3">
-                                <span className="bg-blue-50 text-blue-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                                    Citizen ID: #PNE-402
-                                </span>
-                                <span className="bg-green-50 text-green-600 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">
-                                    12 Total Reports
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button onClick={() => navigate('/report')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-blue-200 transition-all active:scale-95">
-                        <div className="bg-white/20 p-1 rounded-full"><span className="text-lg">+</span></div>
-                        Report New Issue
-                    </button>
-                </div>
-
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left Column: My Issues */}
-                    <div className="lg:col-span-2">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-gray-900">My Submitted Issues</h2>
-                            <div className="bg-white border border-gray-200 rounded-lg p-1 flex">
+                    <div className="lg:col-span-2 space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold font-heading text-slate-900">My Reports</h2>
+                            <div className="bg-white p-1 rounded-xl shadow-sm border border-warm-200 flex">
                                 {['All', 'Pending', 'Resolved'].map(tab => (
                                     <button
                                         key={tab}
                                         onClick={() => setFilter(tab)}
-                                        className={`px-4 py-1.5 rounded-md text-sm font-bold transition-colors ${filter === tab ? 'bg-gray-900 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+                                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${filter === tab ? 'bg-brand-500 text-white shadow-sm' : 'text-slate-500 hover:bg-warm-50'}`}
                                     >
                                         {tab}
                                     </button>
@@ -118,21 +121,29 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Right Column: Settings */}
-                    <div className="lg:col-span-1">
-                        <ProfileSettings />
-
+                    <div className="lg:col-span-1 space-y-6">
                         {/* Transparency Promise Card */}
-                        <div className="bg-blue-600 rounded-2xl p-6 mt-6 text-white shadow-lg shadow-blue-200">
-                            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4 backdrop-blur-sm">
-                                <Crown size={24} />
+                        <div className="bg-gradient-to-br from-brand-500 to-brand-600 rounded-[2rem] p-8 text-white shadow-xl shadow-brand-500/20 relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl pointer-events-none" />
+
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4 backdrop-blur-sm border border-white/10">
+                                <Crown size={24} className="text-white" />
                             </div>
-                            <h3 className="font-bold text-lg mb-2">Transparency Promise</h3>
-                            <p className="text-blue-100 text-sm leading-relaxed mb-4">
-                                Your reports are prioritized using Nagarsevak AI's scheduling algorithm to ensure the most critical city issues are solved first.
+                            <h3 className="font-bold font-heading text-xl mb-2">Citizen Promise</h3>
+                            <p className="text-brand-50 text-sm leading-relaxed mb-6">
+                                Your reports are prioritized using our AI algorithm to ensure critical city issues are solved first.
                             </p>
-                            <a href="#" className="text-xs font-bold underline hover:text-white transition-colors">
-                                Learn how it works
-                            </a>
+                            <button className="text-xs font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors border border-white/10">
+                                View Leaderboard
+                            </button>
+                        </div>
+
+                        <div className="bg-white rounded-[2rem] p-6 shadow-soft border border-warm-200/50">
+                            <h3 className="font-bold font-heading text-slate-900 mb-4 flex items-center gap-2">
+                                <Settings size={18} className="text-slate-400" />
+                                Settings
+                            </h3>
+                            <ProfileSettings />
                         </div>
                     </div>
                 </div>
