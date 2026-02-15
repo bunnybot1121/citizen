@@ -4,7 +4,7 @@ import BottomNav from './BottomNav';
 
 export default function Layout() {
     return (
-        <div className="min-h-screen bg-surface-50 font-sans text-slate-900 selection:bg-brand-100 selection:text-brand-900">
+        <div className="min-h-screen bg-warm-100 font-body text-slate-800 selection:bg-brand-200 selection:text-brand-900">
             <main className="pb-28 safe-bottom">
                 <Outlet />
             </main>

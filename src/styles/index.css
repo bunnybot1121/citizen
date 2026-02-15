@@ -1,31 +1,74 @@
 @import "tailwindcss";
 
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
 @theme {
-    --font-sans: 'Inter', system-ui, sans-serif;
+    --font-heading: 'Outfit', system-ui, sans-serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
 
-    --color-brand-50: #eff6ff;
-    --color-brand-100: #dbeafe;
-    --color-brand-200: #bfdbfe;
-    --color-brand-300: #93c5fd;
-    --color-brand-400: #60a5fa;
-    --color-brand-500: #3b82f6;
-    --color-brand-600: #2563eb;
-    --color-brand-700: #1d4ed8;
-    --color-brand-800: #1e40af;
-    --color-brand-900: #1e3a8a;
-    --color-brand-950: #172554;
+    /* Terracotta (Primary Action) */
+    --color-brand-50: #fdf2f0;
+    --color-brand-100: #fbe5e1;
+    --color-brand-200: #f7cdc6;
+    --color-brand-300: #f2a89d;
+    --color-brand-400: #eb7c6d;
+    --color-brand-500: #e05e4c;
+    /* Main Brand */
+    --color-brand-600: #cc4536;
+    --color-brand-700: #ab382b;
+    --color-brand-800: #8e3228;
+    --color-brand-900: #762e26;
+    --color-brand-950: #401511;
 
-    --color-surface-50: #f8fafc;
-    --color-surface-100: #f1f5f9;
-    --color-surface-200: #e2e8f0;
+    /* Forest Green (Secondary / Success) */
+    --color-secondary-50: #f0fdf4;
+    --color-secondary-100: #dcfce7;
+    --color-secondary-200: #bbf7d0;
+    --color-secondary-300: #86efac;
+    --color-secondary-400: #4ade80;
+    --color-secondary-500: #22c55e;
+    --color-secondary-600: #16a34a;
+    --color-secondary-700: #15803d;
+    /* Main Secondary */
+    --color-secondary-800: #166534;
+    --color-secondary-900: #14532d;
+    --color-secondary-950: #052e16;
 
-    --shadow-glass: 0 4px 30px rgba(0, 0, 0, 0.1);
-    --shadow-nav: 0 -4px 30px rgba(0, 0, 0, 0.05);
+    /* Warm Neutrals (Sand / Paper) */
+    --color-warm-50: #fbfaf8;
+    --color-warm-100: #f5f2eb;
+    /* Main BG */
+    --color-warm-200: #eaddc5;
+    --color-warm-300: #decba5;
+    --color-warm-400: #d1b480;
+    --color-warm-500: #ca9f5c;
+    --color-warm-600: #b5864c;
+    --color-warm-700: #936840;
+    --color-warm-800: #7a5639;
+    --color-warm-900: #644732;
+    --color-warm-950: #36251a;
+
+    /* Surface Colors */
+    --color-surface-50: #fbfaf8;
+    --color-surface-100: #f5f2eb;
+    --color-surface-200: #eaddc5;
+
+    --shadow-soft: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+    --shadow-card: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025);
 }
 
 @layer base {
     body {
-        @apply font-sans bg-surface-50 text-slate-900 antialiased selection:bg-brand-100 selection:text-brand-900 min-h-dvh overflow-x-hidden overflow-y-auto;
+        @apply font-body bg-warm-100 text-slate-800 antialiased selection:bg-brand-200 selection:text-brand-900 min-h-dvh overflow-x-hidden overflow-y-auto;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        @apply font-heading tracking-tight;
     }
 }
 

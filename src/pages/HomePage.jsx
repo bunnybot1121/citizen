@@ -4,6 +4,14 @@ import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCir
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 
+// Redesigned HomePage with Warm Civic Theme
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../services/supabase';
+import { Card, Button } from '../components/ui';
+
 export default function HomePage() {
     const { citizen } = useAuth();
     const [stats, setStats] = useState({ total: 0, pending: 0, resolved: 0 });
@@ -20,18 +28,15 @@ export default function HomePage() {
 
     const loadData = async () => {
         try {
-            // Check if Supabase is configured
             const isSupabaseConfigured = import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY;
 
             if (!isSupabaseConfigured) {
                 console.warn('Supabase not configured, using mock data');
-                // Use mock data immediately
                 setMyIssues(MOCK_ISSUES);
                 setStats({ total: 12, pending: 5, resolved: 7 });
                 return;
             }
 
-            // Get my issues
             const { data: issues, error: fetchError } = await supabase
                 .from('issues')
                 .select('*')
@@ -43,7 +48,6 @@ export default function HomePage() {
 
             setMyIssues(issues || []);
 
-            // Calculate stats (Mock logic if no data yet, or real aggregation)
             if (issues) {
                 setStats({
                     total: issues.length,
@@ -54,7 +58,6 @@ export default function HomePage() {
         } catch (error) {
             console.error('Load data error:', error);
             setError(error.message);
-            // Fallback to mocks on error so UI doesn't break
             setMyIssues(MOCK_ISSUES);
             setStats({ total: 12, pending: 5, resolved: 7 });
         } finally {
@@ -85,119 +88,129 @@ export default function HomePage() {
         }
     ];
 
-    const StatCard = ({ label, value, icon: Icon, color, bg }) => (
-        <div className={`p-4 rounded-2xl ${bg} border border-white/50 shadow-sm flex flex-col items-center justify-center gap-1`}>
-            <div className={`p-2 rounded-full ${color} bg-white/50 mb-1`}>
+    const StatCard = ({ label, value, icon: Icon, colorClass, bgClass }) => (
+        <div className={`p-4 rounded-3xl ${bgClass} border border-transparent shadow-sm flex flex-col items-center justify-center gap-1 min-w-[30%]`}>
+            <div className={`p-2 rounded-full ${colorClass} bg-white/60 mb-1`}>
                 <Icon className="w-5 h-5" />
             </div>
-            <span className="text-2xl font-bold text-slate-800">{value}</span>
-            <span className="text-xs font-medium text-slate-500">{label}</span>
+            <span className="text-2xl font-bold text-slate-800 font-heading">{value}</span>
+            <span className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{label}</span>
         </div>
     );
 
     return (
-        <div className="min-h-screen pb-20">
-            {/* Sticky Header with Glass effect */}
-            <header className="sticky top-0 z-40 glass px-6 py-4 flex items-center justify-between">
+        <div className="min-h-screen pb-24 px-6 pt-8">
+            {/* Header */}
+            <header className="flex items-center justify-between mb-8">
                 <div>
-                    <h1 className="text-xl font-bold bg-gradient-to-r from-brand-600 to-brand-800 bg-clip-text text-transparent">
-                        Nagarsevak
+                    <h1 className="text-3xl font-extrabold text-slate-900 font-heading tracking-tight">
+                        Namaste,<br />
+                        <span className="text-brand-600">{citizen?.name?.split(' ')[0] || 'Citizen'}</span>
                     </h1>
-                    <p className="text-xs text-slate-500 font-medium">
-                        Welcome, {citizen?.name?.split(' ')[0] || 'Citizen'}
-                    </p>
                 </div>
                 <button
                     onClick={() => navigate('/profile')}
-                    className="w-10 h-10 rounded-full bg-surface-100 border border-surface-200 flex items-center justify-center text-slate-600"
+                    className="w-12 h-12 rounded-full bg-white border border-warm-200 shadow-sm flex items-center justify-center text-slate-600 hover:bg-warm-50 transition-colors"
                 >
-                    <span className="text-lg">👤</span>
+                    <span className="text-xl">👤</span>
                 </button>
             </header>
 
-            <div className="px-6 py-6 space-y-8">
-                {/* Hero / Quick Stats */}
-                <div className="space-y-4">
-                    <h2 className="text-lg font-bold text-slate-900">Dashboard</h2>
-                    <div className="grid grid-cols-3 gap-3">
-                        <StatCard
-                            label="Total"
-                            value={stats.total}
-                            icon={FileText}
-                            color="text-brand-600"
-                            bg="bg-brand-50"
-                        />
-                        <StatCard
-                            label="Pending"
-                            value={stats.pending}
-                            icon={Clock}
-                            color="text-amber-500"
-                            bg="bg-amber-50"
-                        />
-                        <StatCard
-                            label="Fixed"
-                            value={stats.resolved}
-                            icon={CheckCircle2}
-                            color="text-emerald-500"
-                            bg="bg-emerald-50"
-                        />
-                    </div>
-                </div>
+            {/* Stats Row */}
+            <div className="flex gap-3 overflow-x-auto no-scrollbar mb-8 pb-2">
+                <StatCard
+                    label="Active"
+                    value={stats.pending}
+                    icon={Clock}
+                    colorClass="text-amber-600"
+                    bgClass="bg-amber-100/50"
+                />
+                <StatCard
+                    label="Fixed"
+                    value={stats.resolved}
+                    icon={CheckCircle2}
+                    colorClass="text-secondary-600"
+                    bgClass="bg-secondary-100/50"
+                />
+                <StatCard
+                    label="Total"
+                    value={stats.total}
+                    icon={FileText}
+                    colorClass="text-brand-600"
+                    bgClass="bg-brand-50"
+                />
+            </div>
 
-                {/* Primary Action */}
+            {/* Hero Action */}
+            <div className="mb-8">
                 <button
                     onClick={() => navigate('/report')}
-                    className="w-full relative overflow-hidden group bg-gradient-to-br from-brand-600 to-brand-700 rounded-3xl p-6 shadow-xl shadow-brand-500/30 text-white text-left transition-transform active:scale-[0.98]"
+                    className="w-full relative overflow-hidden group bg-brand-500 text-white rounded-[2rem] p-8 shadow-xl shadow-brand-500/20 text-left transition-transform active:scale-[0.98]"
                 >
-                    <div className="absolute top-0 right-0 p-8 opacity-10">
-                        <Camera className="w-32 h-32 transform rotate-12 translate-x-8 -translate-y-8" />
+                    <div className="absolute top-0 right-0 p-0 opacity-10 pointer-events-none">
+                        <Camera className="w-48 h-48 transform rotate-12 translate-x-12 -translate-y-8" />
                     </div>
-                    <div className="relative z-10">
-                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4">
-                            <Camera className="w-6 h-6 text-white" />
+
+                    <div className="relative z-10 flex flex-col items-start">
+                        <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-6 border border-white/10">
+                            <Camera className="w-7 h-7 text-white" />
                         </div>
-                        <h3 className="text-2xl font-bold">Report Issue</h3>
-                        <p className="text-brand-100 text-sm mt-1 mb-4 max-w-[200px]">
-                            Spot a problem? Snap a photo and let us know.
+                        <h3 className="text-3xl font-bold font-heading leading-tight mb-2">
+                            Report an<br />Issue
+                        </h3>
+                        <p className="text-brand-50 text-sm font-medium mb-6 max-w-[200px] leading-relaxed">
+                            See something wrong? Snap a photo and let's fix it together.
                         </p>
-                        <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full text-sm font-medium hover:bg-white/30 transition-colors">
+                        <div className="inline-flex items-center gap-2 bg-white text-brand-600 px-6 py-3 rounded-full text-sm font-bold shadow-sm group-hover:bg-brand-50 transition-colors">
                             Start Report <ArrowRight className="w-4 h-4" />
                         </div>
                     </div>
                 </button>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Explore Grid */}
                 <div>
-                    <h2 className="text-lg font-bold text-slate-900 mb-4">Explore</h2>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4 font-heading flex items-center gap-2">
+                        <span>Explore</span>
+                        <div className="h-1 w-1 rounded-full bg-slate-300"></div>
+                        <span className="text-sm font-normal text-slate-400">Services</span>
+                    </h2>
                     <div className="grid grid-cols-2 gap-4">
-                        <button
+                        <Card
                             onClick={() => navigate('/community')}
-                            className="p-5 rounded-2xl bg-white border border-surface-200 shadow-sm flex flex-col items-center gap-3 active:scale-[0.98] transition-transform"
+                            className="bg-white border-none shadow-soft hover:shadow-card transition-all active:scale-[0.98] cursor-pointer flex flex-col items-start gap-4"
                         >
-                            <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
+                            <div className="w-12 h-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center">
                                 <Users className="w-6 h-6" />
                             </div>
-                            <span className="font-semibold text-slate-700">Community</span>
-                        </button>
-                        <button
+                            <div>
+                                <h3 className="font-bold text-slate-800 font-heading">Community</h3>
+                                <p className="text-xs text-slate-500 mt-1">Join discussions</p>
+                            </div>
+                        </Card>
+                        <Card
                             onClick={() => navigate('/map')}
-                            className="p-5 rounded-2xl bg-white border border-surface-200 shadow-sm flex flex-col items-center gap-3 active:scale-[0.98] transition-transform"
+                            className="bg-white border-none shadow-soft hover:shadow-card transition-all active:scale-[0.98] cursor-pointer flex flex-col items-start gap-4"
                         >
-                            <div className="w-12 h-12 rounded-full bg-pink-100 flex items-center justify-center text-pink-600">
+                            <div className="w-12 h-12 rounded-2xl bg-secondary-50 text-secondary-600 flex items-center justify-center">
                                 <MapPin className="w-6 h-6" />
                             </div>
-                            <span className="font-semibold text-slate-700">Map View</span>
-                        </button>
+                            <div>
+                                <h3 className="font-bold text-slate-800 font-heading">City Map</h3>
+                                <p className="text-xs text-slate-500 mt-1">View issues nearby</p>
+                            </div>
+                        </Card>
                     </div>
                 </div>
 
                 {/* Recent Activities */}
                 <div>
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-slate-900">Recent Updates</h2>
-                        <button onClick={() => navigate('/profile')} className="text-brand-600 text-sm font-semibold">
+                    <div className="flex items-center justify-between mb-4 mt-2">
+                        <h2 className="text-xl font-bold text-slate-900 font-heading">Recent Updates</h2>
+                        <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
                             View All
-                        </button>
+                        </Button>
                     </div>
 
                     <div className="space-y-4">
@@ -205,34 +218,41 @@ export default function HomePage() {
                             <div
                                 key={issue.id}
                                 onClick={() => navigate(`/issue/${issue.id}`)}
-                                className="bg-white p-3 rounded-2xl border border-surface-200 shadow-sm flex gap-4 active:scale-[0.98] transition-all"
+                                className="group bg-white p-4 rounded-3xl shadow-soft border border-transparent hover:border-warm-200 flex gap-4 active:scale-[0.98] transition-all cursor-pointer"
                             >
-                                <img
-                                    src={issue.photo || 'https://placehold.co/100x100'}
-                                    alt="Issue"
-                                    className="w-20 h-20 rounded-xl object-cover bg-surface-100"
-                                />
-                                <div className="flex-1 py-1">
+                                <div className="relative shrink-0">
+                                    <img
+                                        src={issue.photo || 'https://placehold.co/100x100'}
+                                        alt="Issue"
+                                        className="w-20 h-20 rounded-2xl object-cover bg-surface-100 shadow-inner"
+                                    />
+                                    <div className={`absolute -bottom-2 -right-2 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider shadow-sm border border-white ${issue.status === 'resolved' ? 'bg-secondary-100 text-secondary-700' : 'bg-amber-100 text-amber-700'
+                                        }`}>
+                                        {issue.status}
+                                    </div>
+                                </div>
+                                <div className="flex-1 py-1 min-w-0">
                                     <div className="flex justify-between items-start">
-                                        <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${issue.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'
-                                            }`}>
-                                            {issue.status}
+                                        <span className="text-xs font-medium text-brand-600 bg-brand-50 px-2 py-0.5 rounded-md truncate max-w-[120px]">
+                                            {issue.sector}
                                         </span>
-                                        <span className="text-xs text-slate-400">
-                                            {new Date(issue.created_at).toLocaleDateString()}
+                                        <span className="text-xs text-slate-400 font-medium">
+                                            {new Date(issue.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                                         </span>
                                     </div>
-                                    <h3 className="font-bold text-slate-800 line-clamp-1 mt-1">{issue.title}</h3>
-                                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{issue.sector}</p>
+                                    <h3 className="font-bold text-slate-800 font-heading line-clamp-1 mt-2 mb-1 group-hover:text-brand-600 transition-colors">
+                                        {issue.title}
+                                    </h3>
 
                                     <div className="flex items-center gap-4 mt-2">
-                                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                                            👍 {issue.upvotes_count || 0}
-                                        </div>
-                                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                                            💬 {issue.comments_count || 0}
+                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-slate-300"></div>
+                                            {issue.upvotes_count || 0} Supports
                                         </div>
                                     </div>
+                                </div>
+                                <div className="self-center text-slate-300">
+                                    <ChevronRight className="w-5 h-5" />
                                 </div>
                             </div>
                         ))}
@@ -242,12 +262,12 @@ export default function HomePage() {
 
             {/* Error Toast / Config Warning */}
             {(!import.meta.env.VITE_SUPABASE_URL || error) && (
-                <div className="fixed bottom-24 left-4 right-4 z-50 animate-float">
-                    <div className="glass-card p-4 rounded-xl flex items-center gap-3 border-l-4 border-l-amber-500">
-                        <AlertTriangle className="w-5 h-5 text-amber-500" />
+                <div className="fixed bottom-24 left-6 right-6 z-50 animate-float pointer-events-none">
+                    <div className="bg-white/90 backdrop-blur-md p-4 rounded-2xl flex items-center gap-3 border-l-4 border-l-amber-500 shadow-xl pointer-events-auto">
+                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
                         <div className="flex-1">
                             <p className="text-xs font-bold text-slate-800">Connection Issues</p>
-                            <p className="text-[10px] text-slate-500">Using offline demo mode</p>
+                            <p className="text-[10px] text-slate-500 leading-tight">Using offline demo mode. Some features may be limited.</p>
                         </div>
                     </div>
                 </div>

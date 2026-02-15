@@ -27,7 +27,9 @@ export default {
                 },
             },
             fontFamily: {
-                sans: ['Inter', 'system-ui', 'sans-serif'],
+                sans: ['DM Sans', 'system-ui', 'sans-serif'],
+                heading: ['Outfit', 'system-ui', 'sans-serif'],
+                body: ['DM Sans', 'system-ui', 'sans-serif'],
             },
             boxShadow: {
                 'glass': '0 4px 30px rgba(0, 0, 0, 0.1)',
