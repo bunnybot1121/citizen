@@ -1,8 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/supabase';
 
 // Redesigned HomePage with Warm Civic Theme
 import React, { useEffect, useState } from 'react';
@@ -277,4 +272,3 @@ export default function HomePage() {
 }
 
 // Helper for Mock Data (re-import or define if needed)
-import { FileText } from 'lucide-react'; 
