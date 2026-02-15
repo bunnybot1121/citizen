@@ -15,6 +15,8 @@ import ReportPage from './pages/ReportPage';
 import Layout from './components/layout/Layout';
 
 // Mock components for non-implemented routes
+const MapPage = () => <div className="p-10 text-center">Map Page (Coming Soon)</div>;
+
 const ProtectedRoute = ({ children }) => {
   const { citizen, loading } = useAuth();
 
