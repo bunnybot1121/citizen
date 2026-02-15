@@ -1,5 +1,5 @@
 import React from 'react';
-import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -15,9 +15,6 @@ import ReportPage from './pages/ReportPage';
 import Layout from './components/layout/Layout';
 
 // Mock components for non-implemented routes
-const MapPage = () => <div className="p-10 text-center">Map Page (Coming Soon)</div>;
-
-// Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
   const { citizen, loading } = useAuth();
 
@@ -30,7 +27,7 @@ const ProtectedRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <HashRouter>
+      <BrowserRouter>
         <div className="app-container">
           <Routes>
             {/* Public Routes */}
@@ -52,7 +49,7 @@ function App() {
           </Routes>
           <Toaster position="top-center" />
         </div>
-      </HashRouter>
+      </BrowserRouter>
     </AuthProvider>
   );
 }
