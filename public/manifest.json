@@ -1,6 +1,6 @@
 {
-    "name": "Nagarsevak - Citizen App",
-    "short_name": "Nagarsevak",
+    "name": "Citizenz - Civic App",
+    "short_name": "Citizenz",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#ffffff",
