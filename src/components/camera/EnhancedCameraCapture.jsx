@@ -357,7 +357,6 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                         {/* Gallery / Info Button */}
                         <button
                             onClick={() => toast.info('Point camera at the issue and tap capture')}
-                            onClick={() => toast.info('Point camera at the issue and tap capture')}
                             className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"
                         >
                             <Info className="w-5 h-5 opacity-90" />
@@ -382,7 +381,6 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
 
                         {/* Camera Toggle Button */}
                         <button
-                            onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
                             onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
                             className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"
                         >
