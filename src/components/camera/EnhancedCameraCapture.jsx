@@ -285,23 +285,25 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                             </div>
                         )}
 
-                        {/* Location Info Overlay */}
+                        {/* Location Info Pill */}
                         {location && !loadingLocation && (
-                            <div className="absolute top-16 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg animate-in fade-in slide-in-from-top-2 z-40">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                        <Navigation className="w-5 h-5 text-green-600" />
+                            <div className="absolute top-16 left-0 right-0 flex justify-center z-40 px-4 animate-in fade-in slide-in-from-top-4">
+                                <div className="bg-black/60 backdrop-blur-md text-white rounded-full pl-3 pr-5 py-2 flex items-center gap-3 shadow-lg border border-white/10 max-w-sm">
+                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shrink-0">
+                                        <Navigation className="w-4 h-4 text-white" />
                                     </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-semibold text-gray-900">
-                                            Location Ready ✓
-                                        </p>
-                                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
-                                            {loadingAddress ? "Fetching street address..." : (address || "Address not found")}
-                                        </p>
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            Accuracy: ±{Math.round(location.accuracy)}m
-                                        </p>
+                                    <div className="flex flex-col min-w-0 text-left">
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-semibold truncate">
+                                                {loadingAddress ? "Locating..." : (address ? address.split(',')[0] : "Location Found")}
+                                            </span>
+                                            <span className="text-xs bg-green-500/20 text-green-300 px-1.5 rounded font-medium">
+                                                ±{Math.round(location.accuracy)}m
+                                            </span>
+                                        </div>
+                                        <span className="text-xs text-white/70 truncate max-w-[200px]">
+                                            {loadingAddress ? "Fetching details..." : (address || "Coordinates ready")}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -355,9 +357,10 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                         {/* Gallery / Info Button */}
                         <button
                             onClick={() => toast.info('Point camera at the issue and tap capture')}
-                            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                            onClick={() => toast.info('Point camera at the issue and tap capture')}
+                            className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"
                         >
-                            <Info className="w-6 h-6" />
+                            <Info className="w-5 h-5 opacity-90" />
                         </button>
 
                         {/* Capture Button */}
@@ -365,21 +368,25 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                             <button
                                 onClick={capturePhoto}
                                 disabled={loadingLocation}
-                                className={`w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-all active:scale-95 shadow-lg ${loadingLocation
-                                    ? 'bg-gray-400 cursor-not-allowed opacity-50'
-                                    : 'bg-white/20 hover:bg-white/30'
+                                className={`w-20 h-20 rounded-full border-[6px] flex items-center justify-center transition-all duration-300 ${loadingLocation
+                                    ? 'border-gray-500 opacity-50 cursor-not-allowed'
+                                    : 'border-white hover:border-gray-200 active:scale-95'
                                     }`}
                             >
-                                <div className={`w-16 h-16 bg-white rounded-full transition-all ${loadingLocation ? 'scale-90' : 'scale-100 group-hover:scale-95'}`} />
+                                <div className={`w-16 h-16 rounded-full transition-all duration-300 ${loadingLocation
+                                    ? 'bg-gray-500'
+                                    : 'bg-white group-active:scale-90 group-hover:scale-[0.95]'
+                                    }`} />
                             </button>
                         </div>
 
                         {/* Camera Toggle Button */}
                         <button
                             onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
-                            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                            onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                            className="w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors border border-white/10"
                         >
-                            <RefreshCw className="w-6 h-6" />
+                            <RefreshCw className="w-5 h-5 opacity-90" />
                         </button>
                     </div>
                 ) : (
