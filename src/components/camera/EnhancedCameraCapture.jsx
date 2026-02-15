@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     X, MapPin, Navigation,
-    CheckCircle, Info, Loader
+    CheckCircle, Info, Loader, RefreshCw, Camera
 } from 'lucide-react';
 import { reverseGeocode } from '../../utils/geocoding';
 import { embedMetadataOnPhoto } from '../../utils/photoMetadata';
@@ -11,6 +11,7 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
     const [stream, setStream] = useState(null);
     const [capturedPhoto, setCapturedPhoto] = useState(null);
     const [location, setLocation] = useState(null);
+    const [facingMode, setFacingMode] = useState('environment'); // 'user' or 'environment'
     const [address, setAddress] = useState('');
     const [loadingLocation, setLoadingLocation] = useState(true);
     const [loadingAddress, setLoadingAddress] = useState(false);
@@ -23,12 +24,20 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
     // Get location on mount
     useEffect(() => {
         getLocation();
-        startCamera();
+    }, []);
+
+    useEffect(() => {
+        // Restart camera when facingMode changes
+        const restart = async () => {
+            stopCamera();
+            await startCamera();
+        };
+        restart();
 
         return () => {
             stopCamera();
         };
-    }, []);
+    }, [facingMode]);
 
     const getLocation = async () => {
         setLoadingLocation(true);
@@ -132,7 +141,7 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: 'environment', // Back camera
+                    facingMode: facingMode,
                     width: { ideal: 1920 },
                     height: { ideal: 1080 }
                 }
@@ -248,7 +257,7 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
 
                         {/* GPS Loading Overlay */}
                         {loadingLocation && (
-                            <div className="absolute top-4 left-4 right-4 bg-yellow-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                            <div className="absolute top-16 left-4 right-4 bg-yellow-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-top-2 z-40">
                                 <Loader className="w-5 h-5 animate-spin" />
                                 <span className="text-sm font-medium">Getting GPS location...</span>
                             </div>
@@ -256,7 +265,7 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
 
                         {/* Location Error / Retry Overlay */}
                         {!loadingLocation && !location && (
-                            <div className="absolute top-4 left-4 right-4 bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg flex flex-col gap-2 animate-in fade-in slide-in-from-top-2">
+                            <div className="absolute top-16 left-4 right-4 bg-red-500 text-white px-4 py-3 rounded-xl shadow-lg flex flex-col gap-2 animate-in fade-in slide-in-from-top-2 z-40">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <Info className="w-5 h-5" />
@@ -278,7 +287,7 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
 
                         {/* Location Info Overlay */}
                         {location && !loadingLocation && (
-                            <div className="absolute top-4 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg animate-in fade-in slide-in-from-top-2">
+                            <div className="absolute top-16 left-4 right-4 bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg animate-in fade-in slide-in-from-top-2 z-40">
                                 <div className="flex items-start gap-3">
                                     <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                         <Navigation className="w-5 h-5 text-green-600" />
@@ -338,71 +347,79 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                 <canvas ref={canvasRef} className="hidden" />
             </div>
 
-            {/* Bottom Controls */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/80 to-transparent pb-safe">
-                <div className="p-6">
-                    {!capturedPhoto ? (
-                        /* Capture Controls */
-                        <div className="flex items-center justify-between">
-                            {/* Close Button */}
-                            <button
-                                onClick={onClose}
-                                className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
+            {/* Bottom Controls - Lifted up to clear BottomNav */}
+            <div className="absolute bottom-20 left-0 right-0 p-6 z-40 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-12">
+                {!capturedPhoto ? (
+                    /* Capture Controls */
+                    <div className="flex items-center justify-between max-w-sm mx-auto">
+                        {/* Gallery / Info Button */}
+                        <button
+                            onClick={() => toast.info('Point camera at the issue and tap capture')}
+                            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                        >
+                            <Info className="w-6 h-6" />
+                        </button>
 
-                            {/* Capture Button */}
+                        {/* Capture Button */}
+                        <div className="relative group">
                             <button
                                 onClick={capturePhoto}
                                 disabled={loadingLocation}
-                                className={`w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-all active:scale-90 ${loadingLocation
-                                    ? 'bg-gray-400 cursor-not-allowed'
+                                className={`w-20 h-20 rounded-full border-4 border-white flex items-center justify-center transition-all active:scale-95 shadow-lg ${loadingLocation
+                                    ? 'bg-gray-400 cursor-not-allowed opacity-50'
                                     : 'bg-white/20 hover:bg-white/30'
                                     }`}
                             >
-                                <div className="w-16 h-16 bg-white rounded-full" />
+                                <div className={`w-16 h-16 bg-white rounded-full transition-all ${loadingLocation ? 'scale-90' : 'scale-100 group-hover:scale-95'}`} />
                             </button>
+                        </div>
 
-                            {/* Info Button */}
-                            <button
-                                onClick={() => toast.info('Point camera at the issue and tap capture')}
-                                className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
-                            >
-                                <Info className="w-6 h-6" />
-                            </button>
-                        </div>
-                    ) : (
-                        /* Confirm/Retake Controls */
-                        <div className="flex items-center justify-center gap-4">
-                            <button
-                                onClick={retakePhoto}
-                                disabled={processing}
-                                className="flex-1 bg-white/20 backdrop-blur-sm text-white py-4 rounded-xl font-semibold hover:bg-white/30 transition-colors disabled:opacity-50"
-                            >
-                                Retake Photo
-                            </button>
-                            <button
-                                onClick={confirmPhoto}
-                                disabled={processing}
-                                className="flex-1 bg-blue-600 text-white py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                            >
-                                {processing ? (
-                                    <>
-                                        <Loader className="w-5 h-5 animate-spin" />
-                                        <span>Processing...</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <CheckCircle className="w-5 h-5" />
-                                        <span>Use Photo</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    )}
-                </div>
+                        {/* Camera Toggle Button */}
+                        <button
+                            onClick={() => setFacingMode(prev => prev === 'user' ? 'environment' : 'user')}
+                            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                        >
+                            <RefreshCw className="w-6 h-6" />
+                        </button>
+                    </div>
+                ) : (
+                    /* Confirm/Retake Controls */
+                    <div className="flex items-center justify-center gap-4 pb-4">
+                        <button
+                            onClick={retakePhoto}
+                            disabled={processing}
+                            className="flex-1 bg-white/20 backdrop-blur-md text-white py-4 rounded-xl font-semibold hover:bg-white/30 transition-colors disabled:opacity-50"
+                        >
+                            Retake
+                        </button>
+                        <button
+                            onClick={confirmPhoto}
+                            disabled={processing}
+                            className="flex-1 bg-blue-600/90 backdrop-blur-md text-white py-4 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg"
+                        >
+                            {processing ? (
+                                <>
+                                    <Loader className="w-5 h-5 animate-spin" />
+                                    <span>Processing...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <CheckCircle className="w-5 h-5" />
+                                    <span>Use Photo</span>
+                                </>
+                            )}
+                        </button>
+                    </div>
+                )}
             </div>
+
+            {/* Close Button - Moved to Top Left for better accessibility */}
+            <button
+                onClick={onClose}
+                className="absolute top-4 left-4 z-50 w-10 h-10 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 transition-colors"
+            >
+                <X className="w-6 h-6" />
+            </button>
         </div>
     );
 }
