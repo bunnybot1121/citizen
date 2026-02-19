@@ -78,7 +78,7 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                     // Step 2: Force Fresh High Accuracy
                     position = await getPosition({
                         enableHighAccuracy: true,
-                        timeout: 5000,
+                        timeout: 15000, // Increased to 15s for better fix
                         maximumAge: 0
                     });
                 } catch (err2) {
@@ -288,21 +288,21 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                         {/* Location Info Pill */}
                         {location && !loadingLocation && (
                             <div className="absolute top-16 left-0 right-0 flex justify-center z-40 px-4 animate-in fade-in slide-in-from-top-4">
-                                <div className="bg-black/60 backdrop-blur-md text-white rounded-full pl-3 pr-5 py-2 flex items-center gap-3 shadow-lg border border-white/10 max-w-sm">
-                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shrink-0">
-                                        <Navigation className="w-4 h-4 text-white" />
+                                <div className="bg-black/60 backdrop-blur-md text-white rounded-xl pl-3 pr-5 py-2 flex items-center gap-3 shadow-lg border border-white/10 max-w-sm">
+                                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shrink-0">
+                                        <Navigation className="w-5 h-5 text-white" />
                                     </div>
                                     <div className="flex flex-col min-w-0 text-left">
                                         <div className="flex items-center gap-2">
                                             <span className="text-sm font-semibold truncate">
-                                                {loadingAddress ? "Locating..." : (address ? address.split(',')[0] : "Location Found")}
+                                                {loadingAddress ? "Locating..." : (address ? address.split(',')[1] || address.split(',')[0] : "Location Found")}
                                             </span>
-                                            <span className="text-xs bg-green-500/20 text-green-300 px-1.5 rounded font-medium">
+                                            <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 rounded font-medium">
                                                 ±{Math.round(location.accuracy)}m
                                             </span>
                                         </div>
-                                        <span className="text-xs text-white/70 truncate max-w-[200px]">
-                                            {loadingAddress ? "Fetching details..." : (address || "Coordinates ready")}
+                                        <span className="text-xs text-white/70 font-mono">
+                                            {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                                         </span>
                                     </div>
                                 </div>

@@ -19,8 +19,8 @@
     "path": "C:\\Users\\Admin\\citizen\\twa-build\\android.keystore",
     "alias": "android"
   },
-  "appVersionName": "v1",
-  "appVersionCode": 2,
+  "appVersionName": "v3",
+  "appVersionCode": 4,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://citizen-coral.vercel.app/manifest.json",
@@ -46,5 +46,5 @@
   "fileHandlers": [],
   "launchHandlerClientMode": "",
   "displayOverride": [],
-  "appVersion": "v1"
+  "appVersion": "v3"
 }

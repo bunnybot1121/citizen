@@ -40,17 +40,32 @@ export async function reverseGeocode(latitude, longitude) {
         const address = data.address;
         const parts = [];
 
+        // 1. Specific Location (Building/Road)
+        if (address.building) parts.push(address.building);
         if (address.road) parts.push(address.road);
-        if (address.suburb || address.neighbourhood) {
-            parts.push(address.suburb || address.neighbourhood);
-        }
-        if (address.city || address.town) {
-            parts.push(address.city || address.town);
-        }
+
+        // 2. Area/Neighborhood
+        if (address.suburb) parts.push(address.suburb);
+        else if (address.neighbourhood) parts.push(address.neighbourhood);
+        else if (address.residential) parts.push(address.residential);
+
+        // 3. City/Town/Village
+        if (address.city) parts.push(address.city);
+        else if (address.town) parts.push(address.town);
+        else if (address.village) parts.push(address.village);
+        else if (address.municipality) parts.push(address.municipality);
+
+        // 4. State/Province
         if (address.state) parts.push(address.state);
+
+        // 5. Postal Code
         if (address.postcode) parts.push(address.postcode);
 
-        return parts.join(', ');
+        // 6. Country
+        if (address.country) parts.push(address.country);
+
+        // Filter duplicates and join
+        return [...new Set(parts)].join(', ');
 
     } catch (error) {
         console.error('Reverse geocoding error:', error);

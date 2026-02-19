@@ -11,7 +11,7 @@
     <color name="navigationDividerColorDark">#000000</color>
     <color name="shortcut_background">#F5F5F5</color>
     <integer name="splashScreenFadeOutDuration">300</integer>
-    <string name="appName" translatable="false">Nagarsevak</string>
+    <string name="appName" translatable="false">Citizenz</string>
     <string name="assetStatements">
     [{
         \"relation\": [\"delegate_permission/common.handle_all_urls\"],
@@ -27,8 +27,8 @@
     <string name="generatorApp" translatable="false">bubblewrap-cli</string>
     <string name="hostName" translatable="false">citizen-coral.vercel.app</string>
     <string name="launchUrl" translatable="false">https://citizen-coral.vercel.app/</string>
-    <string name="launcherName" translatable="false">Nagarsevak</string>
+    <string name="launcherName" translatable="false">Citizenz</string>
     <string name="orientation" translatable="false">default</string>
     <string name="providerAuthority" translatable="false">com.nagarsevak.app.fileprovider</string>
-    <string name="webManifestUrl" translatable="false">https://citizen-coral.vercel.app/manifest.json</string>
+    <string name="webManifestUrl" translatable="false">http://localhost:8000/manifest.json</string>
 </resources>

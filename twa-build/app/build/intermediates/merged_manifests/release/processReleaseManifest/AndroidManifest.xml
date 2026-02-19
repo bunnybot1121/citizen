@@ -23,8 +23,8 @@
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.nagarsevak.app"
-    android:versionCode="2"
-    android:versionName="v1" >
+    android:versionCode="4"
+    android:versionName="v3" >
 
     <uses-sdk
         android:minSdkVersion="21"

@@ -38,126 +38,107 @@ export async function embedMetadataOnPhoto(photoDataUrl, metadata) {
 }
 
 function addOverlays(ctx, width, height) {
-    // Top gradient (for location tag)
-    const topGradient = ctx.createLinearGradient(0, 0, 0, 150);
-    topGradient.addColorStop(0, 'rgba(0, 0, 0, 0.6)');
-    topGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = topGradient;
-    ctx.fillRect(0, 0, width, 150);
-
-    // Bottom gradient (for details)
-    const bottomGradient = ctx.createLinearGradient(0, height - 200, 0, height);
+    // Bottom gradient (stronger for visibility)
+    const bottomGradient = ctx.createLinearGradient(0, height - 250, 0, height);
     bottomGradient.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    bottomGradient.addColorStop(1, 'rgba(0, 0, 0, 0.8)');
+    bottomGradient.addColorStop(0.3, 'rgba(0, 0, 0, 0.5)');
+    bottomGradient.addColorStop(1, 'rgba(0, 0, 0, 0.9)');
     ctx.fillStyle = bottomGradient;
-    ctx.fillRect(0, height - 200, width, 200);
+    ctx.fillRect(0, height - 250, width, 250);
 }
 
 function addTopMetadata(ctx, width, metadata) {
-    const padding = 30;
-    const topY = 40;
-
-    // Location tag with rounded background
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.beginPath();
-    if (ctx.roundRect) {
-        ctx.roundRect(padding, topY, 200, 40, 20);
-    } else {
-        ctx.rect(padding, topY, 200, 40); // Fallback
-    }
-    ctx.fill();
-
-    // Location icon (simplified)
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 16px Arial';
-    ctx.fillText('📍', padding + 10, topY + 27);
-
-    // Location name (shortened if too long)
-    ctx.font = 'bold 14px Arial';
-    ctx.fillStyle = '#ffffff';
-    const locationText = shortenText(metadata.address ? metadata.address.split(',')[0] : 'Unknown Location', 20);
-    ctx.fillText(locationText, padding + 40, topY + 27);
-
-    // Mini map placeholder (small rectangle)
-    ctx.fillStyle = 'rgba(100, 150, 255, 0.3)';
-    ctx.fillRect(width - padding - 80, topY, 80, 60);
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(width - padding - 80, topY, 80, 60);
-
-    // Add location pin on mini map
-    ctx.fillStyle = '#ff0000';
-    ctx.beginPath();
-    ctx.arc(width - padding - 40, topY + 30, 5, 0, Math.PI * 2);
-    ctx.fill();
+    // Removed top metadata to match professional style
 }
 
 function addBottomMetadata(ctx, width, height, metadata) {
-    const padding = 30;
-    const bottomY = height - 150;
+    const padding = 20;
+    const bottomY = height - 130; // Base line for metadata
 
-    // White rounded background for metadata
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+    // 1. Two-column layout
+    // Left: Map Placeholder
+    // Right: Details
+
+    const mapSize = 100;
+    const mapX = padding;
+    const mapY = height - mapSize - padding;
+
+    // --- Map Placeholder (Simulated) ---
+    ctx.fillStyle = '#e0e0e0';
+    ctx.fillRect(mapX, mapY, mapSize, mapSize);
+
+    // Grid lines for map look
+    ctx.strokeStyle = '#cccccc';
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    if (ctx.roundRect) {
-        ctx.roundRect(padding, bottomY, width - (padding * 2), 120, 20);
-    } else {
-        ctx.rect(padding, bottomY, width - (padding * 2), 120); // Fallback
+    for (let i = 1; i < 4; i++) {
+        ctx.moveTo(mapX + i * 25, mapY);
+        ctx.lineTo(mapX + i * 25, mapY + mapSize);
+        ctx.moveTo(mapX, mapY + i * 25);
+        ctx.lineTo(mapX + mapSize, mapY + i * 25);
     }
+    ctx.stroke();
+
+    // Map Pin
+    ctx.fillStyle = '#ef4444'; // Red-500
+    ctx.beginPath();
+    ctx.arc(mapX + mapSize / 2, mapY + mapSize / 2 - 5, 4, 0, Math.PI * 2);
+    ctx.fill();
+    // Pin triange
+    ctx.beginPath();
+    ctx.moveTo(mapX + mapSize / 2, mapY + mapSize / 2);
+    ctx.lineTo(mapX + mapSize / 2 - 4, mapY + mapSize / 2 - 2);
+    ctx.lineTo(mapX + mapSize / 2 + 4, mapY + mapSize / 2 - 2);
     ctx.fill();
 
-    // Address icon + text
-    ctx.fillStyle = '#333333';
-    ctx.font = 'bold 12px Arial';
-    ctx.fillText('📍', padding + 20, bottomY + 30);
+    // --- Text Details (Right of Map) ---
+    const textX = mapX + mapSize + 15;
+    let currentY = mapY + 15;
 
-    ctx.font = '14px Arial';
-    ctx.fillStyle = '#000000';
-    const addressLines = wrapText(metadata.address || 'Address unavailable', 40);
+    // Location Name (City/Area)
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 20px Inter, Roboto, Arial';
+    const locationParts = (metadata.address || '').split(', ');
+    const shortLocation = locationParts.length > 2 ? `${locationParts[1] || ''}, ${locationParts[locationParts.length - 1] || ''}` : metadata.address;
+    ctx.fillText(shortenText(shortLocation, 25), textX, currentY);
+
+    // Full Address
+    currentY += 25;
+    ctx.font = '14px Inter, Roboto, Arial';
+    ctx.fillStyle = '#e5e7eb'; // Gray-200
+    const addressLines = wrapText(metadata.address || 'Address unavailable', 45);
     addressLines.slice(0, 2).forEach((line, i) => {
-        ctx.fillText(line, padding + 50, bottomY + 28 + (i * 20));
+        ctx.fillText(line, textX, currentY + (i * 18));
     });
+    currentY += (addressLines.length > 0 ? addressLines.length * 18 : 18) + 10;
 
-    // Timestamp section
-    const timestampY = bottomY + 75;
+    // Lat / Long
+    ctx.font = 'bold 13px Monospace';
+    ctx.fillStyle = '#ffffff';
+    const lat = typeof metadata.location.latitude === 'number' ? metadata.location.latitude : parseFloat(metadata.location.latitude);
+    const lng = typeof metadata.location.longitude === 'number' ? metadata.location.longitude : parseFloat(metadata.location.longitude);
+    const coords = `Lat ${lat.toFixed(6)}  Long ${lng.toFixed(6)}`;
+    ctx.fillText(coords, textX, currentY);
 
-    // Date
-    ctx.fillStyle = '#666666';
-    ctx.font = 'bold 11px Arial';
-    ctx.fillText('📅', padding + 20, timestampY);
-    ctx.font = '12px Arial';
+    // Date & Time
+    currentY += 20;
     const dateStr = formatDate(metadata.timestamp);
-    ctx.fillText(dateStr, padding + 45, timestampY);
-
-    // Time
-    const timeX = width / 2 - 50;
-    ctx.fillStyle = '#666666';
-    ctx.font = 'bold 11px Arial';
-    ctx.fillText('🕐', timeX, timestampY);
-    ctx.font = 'bold 16px Arial';
     const timeStr = formatTime(metadata.timestamp);
-    ctx.fillText(timeStr, timeX + 30, timestampY);
+    ctx.font = '13px Inter, Roboto, Arial';
+    ctx.fillStyle = '#d1d5db'; // Gray-300
+    ctx.fillText(`${dateStr} ${timeStr} GMT+05:30`, textX, currentY);
 
-    // Coordinates
-    const coordY = bottomY + 100;
-    ctx.fillStyle = '#666666';
-    ctx.font = '10px Arial';
-    const coordText = `Lat: ${metadata.location.latitude.toFixed(6)}  Long: ${metadata.location.longitude.toFixed(6)}`;
-    ctx.fillText(coordText, padding + 20, coordY);
-
-    // Accuracy badge
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 10px Arial';
-    const accuracyText = `±${Math.round(metadata.location.accuracy)}m`;
-    ctx.fillText(accuracyText, width - padding - 80, coordY);
-
-    // "NAGARSEVAK" watermark
+    // --- Branding / Watermark ---
+    // Right side or Background
     ctx.save();
-    ctx.translate(width - padding - 100, bottomY + 40);
-    ctx.rotate(-Math.PI / 12);
-    ctx.fillStyle = 'rgba(59, 130, 246, 0.15)';
-    ctx.font = 'bold 24px Arial';
-    ctx.fillText('NAGARSEVAK', 0, 0);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.font = 'bold italic 24px Arial';
+    ctx.fillText('CITIZENZ', width - padding, mapY + 25);
+
+    ctx.font = '10px Arial';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fillText('GPS Map Camera', width - padding, mapY + 40);
     ctx.restore();
 }
 
