@@ -288,20 +288,32 @@ export default function EnhancedCameraCapture({ onCapture, onClose }) {
                         {/* Location Info Pill */}
                         {location && !loadingLocation && (
                             <div className="absolute top-16 left-0 right-0 flex justify-center z-40 px-4 animate-in fade-in slide-in-from-top-4">
-                                <div className="bg-black/60 backdrop-blur-md text-white rounded-xl pl-3 pr-5 py-2 flex items-center gap-3 shadow-lg border border-white/10 max-w-sm">
-                                    <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shrink-0">
-                                        <Navigation className="w-5 h-5 text-white" />
+                                <div className="bg-black/70 backdrop-blur-md text-white rounded-xl pl-3 pr-4 py-2.5 flex items-start gap-3 shadow-lg border border-white/10 max-w-sm w-full">
+                                    <div className="w-9 h-9 bg-green-500 rounded-full flex items-center justify-center shrink-0 mt-0.5">
+                                        <Navigation className="w-4 h-4 text-white" />
                                     </div>
-                                    <div className="flex flex-col min-w-0 text-left">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm font-semibold truncate">
-                                                {loadingAddress ? "Locating..." : (address ? address.split(',')[1] || address.split(',')[0] : "Location Found")}
+                                    <div className="flex flex-col min-w-0 text-left flex-1">
+                                        {/* Primary: first 2 address parts (most specific) */}
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-sm font-semibold leading-tight">
+                                                {loadingAddress
+                                                    ? 'Fetching address...'
+                                                    : address
+                                                        ? address.split(',').slice(0, 2).join(',').trim()
+                                                        : 'Location found'}
                                             </span>
-                                            <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 rounded font-medium">
+                                            <span className="text-[10px] bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded font-medium shrink-0">
                                                 ±{Math.round(location.accuracy)}m
                                             </span>
                                         </div>
-                                        <span className="text-xs text-white/70 font-mono">
+                                        {/* Secondary: remaining address parts */}
+                                        {address && address.split(',').length > 2 && (
+                                            <span className="text-[11px] text-white/60 leading-tight mt-0.5 truncate">
+                                                {address.split(',').slice(2).join(',').trim()}
+                                            </span>
+                                        )}
+                                        {/* Coordinates */}
+                                        <span className="text-[10px] text-white/50 font-mono mt-1">
                                             {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
                                         </span>
                                     </div>
