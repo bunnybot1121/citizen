@@ -5,44 +5,6 @@ import IssueCard from '../components/community/IssueCard';
 import { supabase } from '../services/supabase';
 import { Button, Input } from '../components/ui';
 
-const MOCK_ISSUES = [
-    {
-        id: 1,
-        title: "Burst Pipe: Large Water Leakage",
-        description: "Flooding service roads, causing major traffic jams. Clean water waste significant.",
-        status: "In Progress",
-        upvotes_count: 142,
-        comments_count: 24,
-        location: { address: "MG Road Metro Station" },
-        photo: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800&q=80",
-        author: { name: "Ravi Kumar" },
-        created_at: new Date().toISOString()
-    },
-    {
-        id: 2,
-        title: "Broken Street Lights (5 units)",
-        description: "Entire lane near the park entrance is pitch black. Safety concern for residents.",
-        status: "New Report",
-        upvotes_count: 67,
-        comments_count: 8,
-        location: { address: "Sector 4, Central Park" },
-        author: { name: "Anjali Singh" },
-        created_at: new Date(Date.now() - 86400000).toISOString()
-    },
-    {
-        id: 3,
-        title: "Deep Potholes on Main Exit",
-        description: "Patchwork completed. Final surfacing scheduled for next weekend. Road is clear.",
-        status: "Resolved",
-        upvotes_count: 214,
-        comments_count: 52,
-        location: { address: "North Road Overpass" },
-        photo: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800&q=80",
-        author: { name: "Vikram Malhotra" },
-        created_at: new Date(Date.now() - 172800000).toISOString()
-    }
-];
-
 export default function CommunityPage() {
     const [issues, setIssues] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -50,10 +12,47 @@ export default function CommunityPage() {
     const [filter, setFilter] = useState('All');
 
     useEffect(() => {
-        // Fetch real issues or use mock for now
-        setIssues(MOCK_ISSUES);
-        setLoading(false);
+        async function fetchIssues() {
+            setLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from('issues')
+                    .select('*')
+                    .order('created_at', { ascending: false })
+                    .limit(30);
+
+                if (error) throw error;
+
+                // Map DB columns to what IssueCard expects
+                const mapped = (data || []).map(issue => ({
+                    id: issue.id,
+                    title: issue.description?.split('\n')[0] || issue.issue_type,
+                    description: issue.description || '',
+                    status: issue.status === 'new' ? 'New Report'
+                        : issue.status === 'in_progress' ? 'In Progress'
+                            : issue.status === 'resolved' ? 'Resolved'
+                                : issue.status,
+                    upvotes_count: issue.upvotes_count || 0,
+                    comments_count: issue.comments_count || 0,
+                    location: { address: issue.location_address || 'Unknown location' },
+                    photo: issue.photo_url,
+                    author: { name: issue.citizen_name || 'Citizen' },
+                    created_at: issue.created_at,
+                }));
+
+                setIssues(mapped);
+            } catch (err) {
+                console.error('Failed to fetch issues:', err);
+                // Fall back to empty list
+                setIssues([]);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchIssues();
     }, []);
+
 
     return (
         <div className="min-h-screen bg-warm-100 pb-24">

@@ -4,7 +4,7 @@ import { Camera, MapPin, Send, Loader, ArrowLeft, Image as ImageIcon, AlertCircl
 import EnhancedCameraCapture from '../components/camera/EnhancedCameraCapture';
 import StaticMapPreview from '../components/maps/StaticMapPreview';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../services/supabase';
+import { issueService } from '../services/issueService';
 import toast from 'react-hot-toast';
 import { Button, Card, Input } from '../components/ui';
 
@@ -51,69 +51,64 @@ export default function ReportPage() {
         setSubmitting(true);
 
         try {
-            // Upload photo to Supabase Storage
-            const photoFileName = `${citizen.id}_${Date.now()}.jpg`;
+            // Step 1: Convert data URL to Blob
+            let photoBlob;
+            try {
+                const res = await fetch(photoData.photo);
+                photoBlob = await res.blob();
+            } catch (err) {
+                toast.error(`Photo error: ${err.message}`);
+                return;
+            }
 
-            // Convert data URL to Blob
-            const res = await fetch(photoData.photo);
-            const photoBlob = await res.blob();
+            // Step 2: Upload photo
+            toast.loading('Uploading photo...', { id: 'submit' });
+            let photoUrl;
+            try {
+                const { issueService: svc } = await import('../services/issueService');
+                photoUrl = await svc.uploadPhoto(photoBlob, citizen?.id || 'anonymous');
+            } catch (err) {
+                toast.error(`Upload failed: ${err.message}`, { id: 'submit' });
+                return;
+            }
 
-            const { data: uploadData, error: uploadError } = await supabase.storage
-                .from('issue-photos')
-                .upload(photoFileName, photoBlob, {
-                    contentType: 'image/jpeg',
-                    cacheControl: '3600'
-                });
-
-            if (uploadError) throw uploadError;
-
-            // Get public URL
-            const { data: { publicUrl } } = supabase.storage
-                .from('issue-photos')
-                .getPublicUrl(photoFileName);
-
-            // Create issue with metadata
-            const { data: issue, error: issueError } = await supabase
+            // Step 3: Insert into database
+            toast.loading('Saving report...', { id: 'submit' });
+            const { supabase } = await import('../services/supabase');
+            const { data, error } = await supabase
                 .from('issues')
                 .insert({
-                    citizen_id: citizen.id,
-                    title: title || 'Issue Report',
-                    description,
-                    sector,
+                    citizen_id: citizen?.id && /^[0-9a-f-]{36}$/i.test(citizen.id) ? citizen.id : null,
+                    citizen_name: citizen?.name,
+                    citizen_phone: citizen?.phone,
+                    issue_type: sector,
+                    description: title ? `${title}\n\n${description}` : description,
+                    location_address: photoData.address,
+                    latitude: photoData.location?.latitude,
+                    longitude: photoData.location?.longitude,
+                    photo_url: photoUrl,
                     priority: 'medium',
-                    severity: 'medium',
-                    photo: publicUrl,
-                    location: photoData.address,
-                    photo_metadata: {
-                        coordinates: {
-                            lat: photoData.location.latitude,
-                            lng: photoData.location.longitude,
-                            accuracy: photoData.location.accuracy,
-                            altitude: photoData.location.altitude
-                        },
-                        address: photoData.address,
-                        capturedAt: photoData.metadata.capturedAt,
-                        deviceInfo: photoData.metadata.deviceInfo
-                    },
-                    photo_timestamp: photoData.metadata.capturedAt,
-                    location_verified: true,
-                    status: 'pending'
+                    ai_priority_score: 50,
+                    status: 'new'
                 })
                 .select()
                 .single();
 
-            if (issueError) throw issueError;
+            if (error) {
+                toast.error(`DB error: ${error.message}`, { id: 'submit' });
+                return;
+            }
 
-            toast.success('Issue reported successfully!');
+            toast.success('Issue reported successfully!', { id: 'submit' });
             navigate('/home');
 
         } catch (error) {
-            console.error('Submit error:', error);
-            toast.error('Failed to submit report');
+            toast.error(`Error: ${error.message || 'Unknown error'}`, { id: 'submit' });
         } finally {
             setSubmitting(false);
         }
     };
+
 
     if (showCamera) {
         return (
@@ -223,16 +218,16 @@ export default function ReportPage() {
                     <div className="grid grid-cols-2 gap-3">
                         {SECTORS.map(s => (
                             <button
-                                key={s.name}
+                                key={s.id}
                                 type="button"
-                                onClick={() => setSector(s.name)}
-                                className={`p-4 rounded-2xl text-left transition-all border-2 flex flex-col gap-2 ${sector === s.name
+                                onClick={() => setSector(s.id)}
+                                className={`p-4 rounded-2xl text-left transition-all border-2 flex flex-col gap-2 ${sector === s.id
                                     ? 'border-brand-500 bg-brand-50 text-brand-900 shadow-sm'
                                     : 'border-transparent bg-white text-slate-600 hover:bg-white/80 has-[:hover]:border-warm-200 shadow-soft'
                                     }`}
                             >
                                 <span className="text-2xl">{s.icon}</span>
-                                <span className={`text-xs font-bold ${sector === s.name ? 'text-brand-700' : 'text-slate-700'}`}>
+                                <span className={`text-xs font-bold ${sector === s.id ? 'text-brand-700' : 'text-slate-700'}`}>
                                     {s.name}
                                 </span>
                             </button>

@@ -1,262 +1,233 @@
--- ==================================================
--- NAGARSEVAK CITIZEN APP - COMPLETE DATABASE SCHEMA
--- ==================================================
--- Run this entire script in Supabase SQL Editor
--- Make sure to run it in order!
+-- ============================================================
+-- NAGARSEVAK - COMPLETE DATABASE SETUP
+-- Run this in: Supabase Dashboard → SQL Editor
+-- This is safe to run multiple times (uses IF NOT EXISTS)
+-- ============================================================
 
--- ==================================================
--- 1. CREATE CITIZENS TABLE
--- ==================================================
-
+-- ============================================================
+-- 1. CITIZENS TABLE
+-- ============================================================
 CREATE TABLE IF NOT EXISTS public.citizens (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  phone TEXT UNIQUE NOT NULL,
-  name TEXT,
-  email TEXT,
-  city_id UUID REFERENCES cities(id),
+  id            UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  phone         TEXT UNIQUE NOT NULL,
+  name          TEXT,
+  email         TEXT,
+  role          TEXT DEFAULT 'citizen' CHECK (role IN ('citizen', 'worker', 'admin')),
   profile_photo TEXT,
-  karma_score INTEGER DEFAULT 0,
-  is_verified BOOLEAN DEFAULT false,
-  is_active BOOLEAN DEFAULT true,
-  is_banned BOOLEAN DEFAULT false,
-  ban_reason TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  last_login TIMESTAMPTZ,
-  CONSTRAINT valid_phone CHECK (phone ~ '^\+?[1-9]\d{9,14}$')
+  karma_score   INTEGER DEFAULT 0,
+  is_verified   BOOLEAN DEFAULT false,
+  is_active     BOOLEAN DEFAULT true,
+  is_banned     BOOLEAN DEFAULT false,
+  ban_reason    TEXT,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  last_login    TIMESTAMPTZ
 );
 
--- Indexes
 CREATE INDEX IF NOT EXISTS idx_citizens_phone ON citizens(phone);
-CREATE INDEX IF NOT EXISTS idx_citizens_city ON citizens(city_id);
-CREATE INDEX IF NOT EXISTS idx_citizens_active ON citizens(is_active) WHERE is_active = true;
 
--- Enable RLS
 ALTER TABLE citizens ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-DROP POLICY IF EXISTS "Citizens can view own profile" ON citizens;
-CREATE POLICY "Citizens can view own profile"
-  ON citizens FOR SELECT
-  USING (auth.uid()::text = id::text);
-
+DROP POLICY IF EXISTS "Citizens can view own profile"   ON citizens;
 DROP POLICY IF EXISTS "Citizens can update own profile" ON citizens;
-CREATE POLICY "Citizens can update own profile"
-  ON citizens FOR UPDATE
-  USING (auth.uid()::text = id::text);
+DROP POLICY IF EXISTS "Allow citizen creation"          ON citizens;
 
--- ==================================================
--- 2. EXTEND ISSUES TABLE
--- ==================================================
+CREATE POLICY "Allow citizen creation"        ON citizens FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY "Citizens can view own profile" ON citizens FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Citizens can update own profile" ON citizens FOR UPDATE TO anon, authenticated USING (true);
 
-ALTER TABLE issues 
-  ADD COLUMN IF NOT EXISTS citizen_id UUID REFERENCES citizens(id),
-  ADD COLUMN IF NOT EXISTS visibility TEXT DEFAULT 'public',
-  ADD COLUMN IF NOT EXISTS upvotes_count INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS downvotes_count INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS comments_count INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS net_score INTEGER DEFAULT 0,
-  ADD COLUMN IF NOT EXISTS is_verified_by_community BOOLEAN DEFAULT false,
-  ADD COLUMN IF NOT EXISTS is_spam BOOLEAN DEFAULT false;
-
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_issues_citizen ON issues(citizen_id);
-CREATE INDEX IF NOT EXISTS idx_issues_public ON issues(visibility) WHERE visibility = 'public';
-
--- RLS Policies
-DROP POLICY IF EXISTS "Public issues viewable" ON issues;
-CREATE POLICY "Public issues viewable"
-  ON issues FOR SELECT
-  USING (visibility = 'public' AND is_spam = false);
-
-DROP POLICY IF EXISTS "Citizens can create" ON issues;
-CREATE POLICY "Citizens can create"
-  ON issues FOR INSERT
-  WITH CHECK (auth.uid()::text = citizen_id::text);
-
--- ==================================================
--- 3. CREATE VOTES TABLE
--- ==================================================
-
-CREATE TABLE IF NOT EXISTS public.votes (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  issue_id UUID REFERENCES issues(id) ON DELETE CASCADE NOT NULL,
-  citizen_id UUID REFERENCES citizens(id) ON DELETE CASCADE NOT NULL,
-  vote_type TEXT CHECK (vote_type IN ('up', 'down')) NOT NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(issue_id, citizen_id)
+-- ============================================================
+-- 2. OTP CODES TABLE (used by login flow)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.otp_codes (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  citizen_id  UUID REFERENCES citizens(id) ON DELETE CASCADE NOT NULL,
+  code        TEXT NOT NULL,
+  expires_at  TIMESTAMPTZ NOT NULL,
+  is_used     BOOLEAN DEFAULT false,
+  created_at  TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_votes_issue ON votes(issue_id);
-CREATE INDEX IF NOT EXISTS idx_votes_citizen ON votes(citizen_id);
+CREATE INDEX IF NOT EXISTS idx_otp_citizen ON otp_codes(citizen_id);
 
--- Enable RLS
-ALTER TABLE votes ENABLE ROW LEVEL SECURITY;
+-- ============================================================
+-- 3. ISSUES TABLE (central data store for all panels)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.issues (
+  id                       UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
--- RLS Policies
-DROP POLICY IF EXISTS "Anyone can view votes" ON votes;
-CREATE POLICY "Anyone can view votes"
-  ON votes FOR SELECT USING (true);
+  -- Citizen info
+  citizen_id               UUID REFERENCES citizens(id),
+  citizen_name             TEXT,
+  citizen_phone            TEXT,
 
-DROP POLICY IF EXISTS "Citizens can vote" ON votes;
-CREATE POLICY "Citizens can vote"
-  ON votes FOR INSERT
-  WITH CHECK (auth.uid()::text = citizen_id::text);
+  -- Issue details
+  issue_type               TEXT NOT NULL,
+  description              TEXT,
+  status                   TEXT DEFAULT 'new'    CHECK (status IN ('new', 'in_progress', 'resolved', 'closed')),
+  priority                 TEXT DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'critical')),
+  ai_priority_score        INTEGER DEFAULT 50,
 
--- ==================================================
--- 4. CREATE COMMENTS TABLE
--- ==================================================
+  -- Location
+  location_address         TEXT,
+  latitude                 DOUBLE PRECISION,
+  longitude                DOUBLE PRECISION,
+  location_verified        BOOLEAN DEFAULT false,
 
-CREATE TABLE IF NOT EXISTS public.comments (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  issue_id UUID REFERENCES issues(id) ON DELETE CASCADE NOT NULL,
-  citizen_id UUID REFERENCES citizens(id) ON DELETE CASCADE NOT NULL,
-  comment_text TEXT NOT NULL CHECK (LENGTH(TRIM(comment_text)) > 0),
-  is_edited BOOLEAN DEFAULT false,
-  is_deleted BOOLEAN DEFAULT false,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  -- Photo
+  photo_url                TEXT,
+  photo_timestamp          TIMESTAMPTZ,
+  photo_metadata           JSONB,
+
+  -- Community
+  visibility               TEXT DEFAULT 'public',
+  upvotes_count            INTEGER DEFAULT 0,
+  downvotes_count          INTEGER DEFAULT 0,
+  net_score                INTEGER DEFAULT 0,
+  comments_count           INTEGER DEFAULT 0,
+  is_spam                  BOOLEAN DEFAULT false,
+
+  -- Worker assignment (for Worker Panel)
+  assigned_worker_id       UUID REFERENCES citizens(id),
+  assigned_at              TIMESTAMPTZ,
+  resolved_at              TIMESTAMPTZ,
+  resolution_notes         TEXT,
+
+  created_at               TIMESTAMPTZ DEFAULT NOW(),
+  updated_at               TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_comments_issue ON comments(issue_id);
-CREATE INDEX IF NOT EXISTS idx_comments_created ON comments(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_issues_citizen  ON issues(citizen_id);
+CREATE INDEX IF NOT EXISTS idx_issues_status   ON issues(status);
+CREATE INDEX IF NOT EXISTS idx_issues_type     ON issues(issue_type);
+CREATE INDEX IF NOT EXISTS idx_issues_created  ON issues(created_at DESC);
 
--- Enable RLS
-ALTER TABLE comments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE issues ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
-DROP POLICY IF EXISTS "Comments viewable" ON comments;
-CREATE POLICY "Comments viewable"
-  ON comments FOR SELECT
-  USING (is_deleted = false);
+-- Drop old policies
+DROP POLICY IF EXISTS "Citizens can create"        ON issues;
+DROP POLICY IF EXISTS "Public issues viewable"     ON issues;
+DROP POLICY IF EXISTS "Admin can view all issues"  ON issues;
+DROP POLICY IF EXISTS "Anyone can submit issues"   ON issues;
+DROP POLICY IF EXISTS "Anyone can view public issues" ON issues;
+DROP POLICY IF EXISTS "Anyone can update issues"   ON issues;
 
-DROP POLICY IF EXISTS "Citizens can comment" ON comments;
-CREATE POLICY "Citizens can comment"
-  ON comments FOR INSERT
-  WITH CHECK (auth.uid()::text = citizen_id::text);
+-- New open policies (custom OTP auth = anon role)
+CREATE POLICY "Anyone can submit issues"      ON issues FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY "Anyone can view all issues"    ON issues FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Anyone can update issues"      ON issues FOR UPDATE TO anon, authenticated USING (true);
 
--- ==================================================
--- 5. CREATE OTP TABLE
--- ==================================================
-
-CREATE TABLE IF NOT EXISTS public.otp_verifications (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  phone TEXT NOT NULL,
-  otp_code TEXT NOT NULL CHECK (otp_code ~ '^\d{6}$'),
-  expires_at TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '10 minutes'),
-  is_used BOOLEAN DEFAULT false,
-  attempts INTEGER DEFAULT 0,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_otp_phone ON otp_verifications(phone);
-
--- ==================================================
--- 6. CREATE HELPER FUNCTIONS
--- ==================================================
-
--- Function: Generate OTP
-CREATE OR REPLACE FUNCTION generate_otp(p_phone TEXT)
-RETURNS TABLE(otp_code TEXT, expires_at TIMESTAMPTZ) AS $$
-DECLARE
-  v_otp TEXT;
-  v_expires TIMESTAMPTZ;
-BEGIN
-  v_otp := LPAD(FLOOR(RANDOM() * 1000000)::TEXT, 6, '0');
-  v_expires := NOW() + INTERVAL '10 minutes';
-  
-  INSERT INTO otp_verifications (phone, otp_code, expires_at)
-  VALUES (p_phone, v_otp, v_expires);
-  
-  RETURN QUERY SELECT v_otp, v_expires;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Function: Verify OTP
-CREATE OR REPLACE FUNCTION verify_otp(p_phone TEXT, p_otp TEXT)
-RETURNS TABLE(is_valid BOOLEAN, citizen_id UUID) AS $$
-DECLARE
-  v_citizen_id UUID;
-BEGIN
-  -- Check OTP
-  IF EXISTS (
-    SELECT 1 FROM otp_verifications
-    WHERE phone = p_phone AND otp_code = p_otp
-      AND expires_at > NOW() AND is_used = false
-  ) THEN
-    -- Mark as used
-    UPDATE otp_verifications
-    SET is_used = true
-    WHERE phone = p_phone AND otp_code = p_otp;
-    
-    -- Get or create citizen
-    INSERT INTO citizens (phone, last_login)
-    VALUES (p_phone, NOW())
-    ON CONFLICT (phone) DO UPDATE
-    SET last_login = NOW()
-    RETURNING id INTO v_citizen_id;
-    
-    RETURN QUERY SELECT true, v_citizen_id;
-  ELSE
-    RETURN QUERY SELECT false, NULL::UUID;
-  END IF;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Function: Upsert Vote
-CREATE OR REPLACE FUNCTION upsert_vote(
-  p_issue_id UUID,
-  p_citizen_id UUID,
-  p_vote_type TEXT
-)
-RETURNS void AS $$
-BEGIN
-  INSERT INTO votes (issue_id, citizen_id, vote_type)
-  VALUES (p_issue_id, p_citizen_id, p_vote_type)
-  ON CONFLICT (issue_id, citizen_id)
-  DO UPDATE SET vote_type = EXCLUDED.vote_type, updated_at = NOW();
-  
-  -- Update counts
-  UPDATE issues SET
-    upvotes_count = (SELECT COUNT(*) FROM votes WHERE issue_id = p_issue_id AND vote_type = 'up'),
-    downvotes_count = (SELECT COUNT(*) FROM votes WHERE issue_id = p_issue_id AND vote_type = 'down'),
-    net_score = (
-      SELECT COUNT(*) FILTER (WHERE vote_type = 'up') - COUNT(*) FILTER (WHERE vote_type = 'down')
-      FROM votes WHERE issue_id = p_issue_id
-    )
-  WHERE id = p_issue_id;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- ==================================================
--- SETUP COMPLETE!
--- ==================================================
--- Next: Configure environment variables and start building
-
--- ENHANCED CAMERA METADATA UPDATES
-ALTER TABLE issues 
-  ADD COLUMN IF NOT EXISTS photo_metadata JSONB,
-  ADD COLUMN IF NOT EXISTS location_verified BOOLEAN DEFAULT false,
-  ADD COLUMN IF NOT EXISTS photo_timestamp TIMESTAMPTZ,
-  ADD COLUMN IF NOT EXISTS photo_coordinates POINT; 
-
-CREATE INDEX IF NOT EXISTS idx_issues_location ON issues USING GIST (photo_coordinates);
-CREATE INDEX IF NOT EXISTS idx_issues_photo_timestamp ON issues(photo_timestamp);
-
-COMMENT ON COLUMN issues.photo_metadata IS 
-  'JSON: { "address": "...", "coordinates": {...}, "altitude": ..., "accuracy": ..., "deviceInfo": {...} }';
-
-INSERT INTO storage.buckets (id, name, public) 
+-- ============================================================
+-- 4. STORAGE BUCKET FOR PHOTOS
+-- ============================================================
+INSERT INTO storage.buckets (id, name, public)
 VALUES ('issue-photos', 'issue-photos', true)
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY "Allow authenticated uploads" ON storage.objects
-FOR INSERT TO authenticated
-WITH CHECK (bucket_id = 'issue-photos');
+DROP POLICY IF EXISTS "Allow authenticated uploads"        ON storage.objects;
+DROP POLICY IF EXISTS "Allow all uploads to issue-photos"  ON storage.objects;
+DROP POLICY IF EXISTS "Allow anon photo uploads"           ON storage.objects;
+DROP POLICY IF EXISTS "Allow public view"                  ON storage.objects;
+DROP POLICY IF EXISTS "Allow public photo view"            ON storage.objects;
 
-CREATE POLICY "Allow public view" ON storage.objects
-FOR SELECT TO public
-USING (bucket_id = 'issue-photos');
+CREATE POLICY "Allow anon photo uploads"
+  ON storage.objects FOR INSERT
+  TO anon, authenticated
+  WITH CHECK (bucket_id = 'issue-photos');
 
+CREATE POLICY "Allow public photo view"
+  ON storage.objects FOR SELECT
+  TO anon, authenticated, public
+  USING (bucket_id = 'issue-photos');
+
+-- ============================================================
+-- 5. OTP FUNCTIONS (login flow)
+-- ============================================================
+DROP FUNCTION IF EXISTS public.generate_otp(text);
+CREATE OR REPLACE FUNCTION public.generate_otp(p_phone TEXT)
+RETURNS TABLE (res_otp_code TEXT, res_expires_at TIMESTAMPTZ)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  v_otp TEXT;
+  v_expires_at TIMESTAMPTZ;
+  v_citizen_id UUID;
+BEGIN
+  -- Get or create citizen
+  SELECT id INTO v_citizen_id FROM public.citizens WHERE phone = p_phone;
+  IF v_citizen_id IS NULL THEN
+    INSERT INTO public.citizens (phone, name, role)
+    VALUES (p_phone, 'New Citizen', 'citizen')
+    RETURNING id INTO v_citizen_id;
+  END IF;
+
+  -- Generate 6-digit OTP
+  v_otp := floor(random() * 900000 + 100000)::text;
+  v_expires_at := now() + interval '5 minutes';
+
+  -- Invalidate old OTPs
+  UPDATE public.otp_codes SET is_used = true
+  WHERE citizen_id = v_citizen_id AND is_used = false;
+
+  -- Insert new OTP
+  INSERT INTO public.otp_codes (citizen_id, code, expires_at)
+  VALUES (v_citizen_id, v_otp, v_expires_at);
+
+  RETURN QUERY SELECT v_otp, v_expires_at;
+END;
+$$;
+
+DROP FUNCTION IF EXISTS public.verify_otp(text, text);
+CREATE OR REPLACE FUNCTION public.verify_otp(p_phone TEXT, p_otp TEXT)
+RETURNS TABLE (res_is_valid BOOLEAN, res_citizen_id UUID)
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
+AS $$
+DECLARE
+  v_citizen_id UUID;
+  v_record_id  UUID;
+BEGIN
+  SELECT id INTO v_citizen_id FROM public.citizens WHERE phone = p_phone;
+  IF v_citizen_id IS NULL THEN
+    RETURN QUERY SELECT false, NULL::uuid;
+    RETURN;
+  END IF;
+
+  SELECT id INTO v_record_id
+  FROM public.otp_codes
+  WHERE citizen_id = v_citizen_id
+    AND code = p_otp
+    AND is_used = false
+    AND expires_at > now()
+  ORDER BY created_at DESC LIMIT 1;
+
+  IF v_record_id IS NOT NULL THEN
+    UPDATE public.otp_codes SET is_used = true WHERE id = v_record_id;
+    UPDATE public.citizens SET last_login = now() WHERE id = v_citizen_id;
+    RETURN QUERY SELECT true, v_citizen_id;
+  ELSE
+    RETURN QUERY SELECT false, NULL::uuid;
+  END IF;
+END;
+$$;
+
+-- ============================================================
+-- 6. AUTO-UPDATE updated_at TRIGGER
+-- ============================================================
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_issues_updated_at ON issues;
+CREATE TRIGGER trg_issues_updated_at
+  BEFORE UPDATE ON issues
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- ============================================================
+-- ALL DONE!
+-- ✅ Citizens can now submit reports  
+-- ✅ Admin panel can query the issues table
+-- ✅ Worker panel can query & update issues
+-- ============================================================
