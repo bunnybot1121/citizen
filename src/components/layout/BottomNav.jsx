@@ -14,7 +14,7 @@ export default function BottomNav() {
     ];
 
     return (
-        <nav className="fixed bottom-0 left-0 right-0 z-50 p-4 safe-bottom pointer-events-none">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pt-3 pb-3 safe-bottom pointer-events-none">
             <div className="bg-white/90 backdrop-blur-xl border border-white/20 mx-auto max-w-md rounded-2xl shadow-2xl pointer-events-auto">
                 <div className="grid grid-cols-4 h-16 items-center">
                     {tabs.map(({ path, icon: Icon, label }) => {

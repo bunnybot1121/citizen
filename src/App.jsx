@@ -10,12 +10,11 @@ import HomePage from './pages/HomePage';
 import CommunityPage from './pages/CommunityPage';
 import ProfilePage from './pages/ProfilePage';
 import ReportPage from './pages/ReportPage';
+import MapPage from './pages/MapPage';
 
 // Layout
 import Layout from './components/layout/Layout';
 
-// Mock components for non-implemented routes
-const MapPage = () => <div className="p-10 text-center">Map Page (Coming Soon)</div>;
 
 const ProtectedRoute = ({ children }) => {
   const { citizen, loading } = useAuth();

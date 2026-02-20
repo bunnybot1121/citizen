@@ -77,7 +77,7 @@ export default function CommunityPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-8">
                 {/* Search & Filter */}
-                <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-col gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input
@@ -86,12 +86,12 @@ export default function CommunityPage() {
                             className="w-full bg-white pl-12 pr-4 py-3.5 rounded-2xl border border-warm-200 focus:border-brand-300 focus:ring-2 focus:ring-brand-200 outline-none transition-all shadow-soft"
                         />
                     </div>
-                    <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-warm-200 shadow-soft w-fit">
+                    <div className="flex gap-2 bg-white p-1.5 rounded-2xl border border-warm-200 shadow-soft">
                         {['All', 'Trending', 'Near Me'].map(f => (
                             <button
                                 key={f}
                                 onClick={() => setFilter(f)}
-                                className={`px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f ? 'bg-brand-100 text-brand-700 shadow-sm' : 'text-slate-500 hover:bg-warm-50'}`}
+                                className={`flex-1 px-4 py-2 rounded-xl text-sm font-bold transition-all ${filter === f ? 'bg-brand-100 text-brand-700 shadow-sm' : 'text-slate-500 hover:bg-warm-50'}`}
                             >
                                 {f}
                             </button>

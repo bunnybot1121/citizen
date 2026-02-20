@@ -44,11 +44,11 @@ export default function ProfilePage() {
     return (
         <div className="min-h-screen bg-warm-100 pb-24">
             {/* Profile Header */}
-            <div className="bg-white pb-8 pt-12 px-6 rounded-b-[3rem] shadow-soft border-b border-warm-200 relative overflow-hidden">
+            <div className="bg-white pb-8 pt-20 px-4 sm:px-6 rounded-b-[3rem] shadow-soft border-b border-warm-200 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-brand-600 to-brand-700 pointer-events-none" />
 
                 <div className="max-w-7xl mx-auto relative z-10">
-                    <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
+                    <div className="flex flex-col items-center md:flex-row md:items-end gap-4 md:gap-6">
                         <div className="relative group">
                             <div className="w-32 h-32 rounded-full border-4 border-white shadow-xl overflow-hidden relative bg-slate-200">
                                 <img
@@ -80,12 +80,13 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        <div className="flex gap-3">
+                        <div className="flex gap-3 justify-center w-full md:w-auto">
                             <Button
                                 variant="outline"
                                 size="sm"
                                 className="border-warm-200 text-slate-600 bg-white shadow-sm"
                                 onClick={handleLogout}
+                                aria-label="Logout"
                             >
                                 <LogOut size={16} />
                                 <span className="hidden md:inline">Logout</span>

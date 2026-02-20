@@ -118,7 +118,7 @@ export default function OTPPage() {
                     </div>
 
                     <div className="space-y-8">
-                        <div className="flex gap-2 justify-center">
+                        <div className="flex gap-1.5 justify-center w-full">
                             {otp.map((digit, index) => (
                                 <input
                                     key={index}
@@ -129,7 +129,7 @@ export default function OTPPage() {
                                     value={digit}
                                     onChange={(e) => handleChange(index, e.target.value)}
                                     onKeyDown={(e) => handleKeyDown(index, e)}
-                                    className="w-10 h-14 text-center text-2xl font-heading font-bold bg-warm-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all text-slate-900 caret-brand-500"
+                                    className="flex-1 max-w-[2.75rem] h-14 text-center text-2xl font-heading font-bold bg-warm-50 border-2 border-transparent rounded-xl focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all text-slate-900 caret-brand-500"
                                     disabled={loading}
                                     autoFocus={index === 0}
                                 />

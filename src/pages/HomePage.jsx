@@ -2,10 +2,11 @@
 // Redesigned HomePage with Warm Civic Theme
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight } from 'lucide-react';
+import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { Card, Button } from '../components/ui';
+import NotificationDrawer, { useNotifications } from '../components/NotificationDrawer';
 
 export default function HomePage() {
     const { citizen } = useAuth();
@@ -14,6 +15,8 @@ export default function HomePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const [notifOpen, setNotifOpen] = useState(false);
+    const { notifications, unreadCount, markAllRead } = useNotifications();
 
     useEffect(() => {
         if (citizen) {
@@ -84,7 +87,7 @@ export default function HomePage() {
     ];
 
     const StatCard = ({ label, value, icon: Icon, colorClass, bgClass }) => (
-        <div className={`p-4 rounded-3xl ${bgClass} border border-transparent shadow-sm flex flex-col items-center justify-center gap-1 min-w-[30%]`}>
+        <div className={`p-4 rounded-3xl ${bgClass} border border-transparent shadow-sm flex flex-col items-center justify-center gap-1 flex-1 min-w-0`}>
             <div className={`p-2 rounded-full ${colorClass} bg-white/60 mb-1`}>
                 <Icon className="w-5 h-5" />
             </div>
@@ -94,7 +97,7 @@ export default function HomePage() {
     );
 
     return (
-        <div className="min-h-screen pb-24 px-6 pt-8">
+        <div className="min-h-screen pb-24 px-4 pt-6">
             {/* Header */}
             <header className="flex items-center justify-between mb-8">
                 <div>
@@ -103,12 +106,28 @@ export default function HomePage() {
                         <span className="text-brand-600">{citizen?.name?.split(' ')[0] || 'Citizen'}</span>
                     </h1>
                 </div>
-                <button
-                    onClick={() => navigate('/profile')}
-                    className="w-12 h-12 rounded-full bg-white border border-warm-200 shadow-sm flex items-center justify-center text-slate-600 hover:bg-warm-50 transition-colors"
-                >
-                    <span className="text-xl">👤</span>
-                </button>
+                <div className="flex items-center gap-2">
+                    {/* Notification Bell */}
+                    <button
+                        onClick={() => setNotifOpen(true)}
+                        aria-label="Open notifications"
+                        className="relative w-12 h-12 rounded-full bg-white border border-warm-200 shadow-sm flex items-center justify-center text-slate-600 hover:bg-warm-50 transition-colors active:scale-95"
+                    >
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full border-2 border-white flex items-center justify-center px-0.5">
+                                {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                        )}
+                    </button>
+                    {/* Profile */}
+                    <button
+                        onClick={() => navigate('/profile')}
+                        className="w-12 h-12 rounded-full bg-white border border-warm-200 shadow-sm flex items-center justify-center text-slate-600 hover:bg-warm-50 transition-colors"
+                    >
+                        <span className="text-xl">👤</span>
+                    </button>
+                </div>
             </header>
 
             {/* Stats Row */}
@@ -163,7 +182,7 @@ export default function HomePage() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Explore Grid */}
                 <div>
                     <h2 className="text-xl font-bold text-slate-900 mb-4 font-heading flex items-center gap-2">
@@ -201,7 +220,7 @@ export default function HomePage() {
 
                 {/* Recent Activities */}
                 <div>
-                    <div className="flex items-center justify-between mb-4 mt-2">
+                    <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-bold text-slate-900 font-heading">Recent Updates</h2>
                         <Button variant="ghost" size="sm" onClick={() => navigate('/profile')}>
                             View All
@@ -267,6 +286,15 @@ export default function HomePage() {
                     </div>
                 </div>
             )}
+
+            {/* Notification Drawer */}
+            <NotificationDrawer
+                open={notifOpen}
+                onClose={() => setNotifOpen(false)}
+                notifications={notifications}
+                unreadCount={unreadCount}
+                markAllRead={markAllRead}
+            />
         </div>
     );
 }
