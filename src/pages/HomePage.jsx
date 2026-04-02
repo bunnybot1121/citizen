@@ -2,7 +2,7 @@
 // Redesigned HomePage with Warm Civic Theme
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight, Bell } from 'lucide-react';
+import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight, Bell, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { Card, Button } from '../components/ui';
@@ -159,7 +159,7 @@ export default function HomePage() {
             <div className="mb-8">
                 <button
                     onClick={() => navigate('/report')}
-                    className="w-full relative overflow-hidden group bg-brand-500 text-white rounded-[2rem] p-8 shadow-xl shadow-brand-500/20 text-left transition-transform active:scale-[0.98]"
+                    className="w-full relative overflow-hidden group bg-brand-500 text-white rounded-[2rem] p-8 shadow-xl shadow-brand-500/20 text-left transition-transform active:scale-[0.98] mb-4"
                 >
                     <div className="absolute top-0 right-0 p-0 opacity-10 pointer-events-none">
                         <Camera className="w-48 h-48 transform rotate-12 translate-x-12 -translate-y-8" />
@@ -179,6 +179,22 @@ export default function HomePage() {
                             Start Report <ArrowRight className="w-4 h-4" />
                         </div>
                     </div>
+                </button>
+
+                <button
+                    onClick={() => navigate('/track')}
+                    className="w-full relative overflow-hidden group bg-white border border-warm-200 text-slate-800 rounded-[2rem] p-6 shadow-soft text-left transition-transform active:scale-[0.98] flex items-center justify-between"
+                >
+                    <div className="flex items-center gap-4 relative z-10">
+                        <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center group-hover:bg-brand-50 transition-colors">
+                            <Search className="w-6 h-6 text-brand-500" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold font-heading">Track My Issue</h3>
+                            <p className="text-slate-500 text-xs font-medium">Check the status of your report</p>
+                        </div>
+                    </div>
+                    <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-brand-500 transition-colors relative z-10" />
                 </button>
             </div>
 

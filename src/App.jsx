@@ -11,6 +11,7 @@ import CommunityPage from './pages/CommunityPage';
 import ProfilePage from './pages/ProfilePage';
 import ReportPage from './pages/ReportPage';
 import MapPage from './pages/MapPage';
+import TrackPage from './pages/TrackPage';
 
 // Layout
 import Layout from './components/layout/Layout';
@@ -43,6 +44,8 @@ function App() {
               <Route path="/map" element={<MapPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/report" element={<ReportPage />} />
+              <Route path="/track" element={<TrackPage />} />
+              <Route path="/issue/:id" element={<TrackPage />} />
             </Route>
 
             {/* Fallback */}

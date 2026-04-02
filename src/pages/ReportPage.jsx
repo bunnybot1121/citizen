@@ -25,6 +25,7 @@ export default function ReportPage() {
     const [description, setDescription] = useState('');
     const [sector, setSector] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const [submittedData, setSubmittedData] = useState(null);
 
     const { citizen } = useAuth();
     const navigate = useNavigate();
@@ -99,8 +100,10 @@ export default function ReportPage() {
                 return;
             }
 
+            const trackId = `CTZ-${data.id.substring(0, 8).toUpperCase()}`;
+
             toast.success('Issue reported successfully!', { id: 'submit' });
-            navigate('/home');
+            setSubmittedData({ ...data, trackId });
 
         } catch (error) {
             toast.error(`Error: ${error.message || 'Unknown error'}`, { id: 'submit' });
@@ -116,6 +119,45 @@ export default function ReportPage() {
                 onCapture={handlePhotoCapture}
                 onClose={() => setShowCamera(false)}
             />
+        );
+    }
+
+    if (submittedData) {
+        return (
+            <div className="min-h-screen pb-24 relative flex flex-col items-center justify-center px-6 bg-warm-50/50">
+                <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-sm border border-green-200">
+                    <CheckCircle2 className="w-12 h-12 text-green-600" />
+                </div>
+                <h1 className="text-3xl font-extrabold text-slate-900 font-heading mb-3 text-center">Report Submitted!</h1>
+                <p className="text-slate-600 text-center mb-10 max-w-sm text-sm font-medium">
+                    Your issue has been successfully reported. Please save the tracking number below to check its status.
+                </p>
+
+                <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-warm-200/60 w-full max-w-sm mb-8 text-center relative overflow-hidden">
+                    <div className="absolute top-0 inset-x-0 h-1 bg-brand-500"></div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Tracking Number</p>
+                    <div className="text-4xl font-mono font-black text-brand-600 mb-6 tracking-tight">{submittedData.trackId}</div>
+                    <Button 
+                        onClick={() => {
+                            navigator.clipboard.writeText(submittedData.trackId);
+                            toast.success('Copied to clipboard!');
+                        }}
+                        variant="ghost" 
+                        className="w-full bg-slate-50 text-slate-700 hover:bg-slate-100 font-bold"
+                    >
+                        Copy to Clipboard
+                    </Button>
+                </div>
+
+                <div className="w-full max-w-sm space-y-3">
+                    <Button onClick={() => navigate('/home')} className="w-full h-14 rounded-full text-lg shadow-xl shadow-brand-500/20" size="lg">
+                        Back to Home
+                    </Button>
+                    <Button onClick={() => navigate('/track')} variant="ghost" className="w-full h-14 rounded-full text-lg text-brand-600 bg-brand-50/80 hover:bg-brand-100" size="lg">
+                        Track Issue Now
+                    </Button>
+                </div>
+            </div>
         );
     }
 
