@@ -2,7 +2,7 @@
 // Redesigned HomePage with Warm Civic Theme
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Users, MapPin, Plus, AlertTriangle, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight, Bell, Search } from 'lucide-react';
+import { Camera, Users, MapPin, Plus, ArrowRight, Clock, CheckCircle2, FileText, ChevronRight, Bell, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../services/supabase';
 import { Card, Button } from '../components/ui';
@@ -290,18 +290,7 @@ export default function HomePage() {
                 </div>
             </div>
 
-            {/* Error Toast / Config Warning */}
-            {(!import.meta.env.VITE_SUPABASE_URL || error) && (
-                <div className="fixed bottom-24 left-6 right-6 z-50 animate-float pointer-events-none">
-                    <div className="bg-white/90 backdrop-blur-md p-4 rounded-2xl flex items-center gap-3 border-l-4 border-l-amber-500 shadow-xl pointer-events-auto">
-                        <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />
-                        <div className="flex-1">
-                            <p className="text-xs font-bold text-slate-800">Connection Issues</p>
-                            <p className="text-[10px] text-slate-500 leading-tight">Using offline demo mode. Some features may be limited.</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* Notification Drawer */}
             <NotificationDrawer
