@@ -9,13 +9,10 @@ import toast from 'react-hot-toast';
 import { Button, Card, Input } from '../components/ui';
 
 const SECTORS = [
-    { id: 'water', name: 'Water Supply', icon: '💧' },
-    { id: 'drainage', name: 'Sewerage & Drainage', icon: '🕳️' },
-    { id: 'roads', name: 'Roads & Works', icon: '🚧' },
-    { id: 'lights', name: 'Street Lighting', icon: '💡' },
-    { id: 'waste', name: 'Garbage & Waste', icon: '🗑️' },
-    { id: 'sanitation', name: 'Public Sanitation', icon: '🚽' },
-    { id: 'parks', name: 'Parks & Greenery', icon: '🌳' }
+    { id: 'roads', name: 'Roads Department', icon: '🚧' },
+    { id: 'water', name: 'Water Department', icon: '💧' },
+    { id: 'electricity', name: 'Electricity Department', icon: '💡' },
+    { id: 'sewage', name: 'Sewage Department', icon: '🕳️' }
 ];
 
 export default function ReportPage() {

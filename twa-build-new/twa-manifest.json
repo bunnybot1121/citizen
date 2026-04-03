@@ -1,0 +1,54 @@
+{
+  "packageId": "com.nagarsevak.app",
+  "host": "citizenz.vercel.app",
+  "name": "Citizenz",
+  "launcherName": "Citizenz",
+  "display": "standalone",
+  "themeColor": "#3B82F6",
+  "themeColorDark": "#1E3A5F",
+  "navigationColor": "#1E3A5F",
+  "navigationColorDark": "#0F1D2F",
+  "navigationDividerColor": "#1E3A5F",
+  "navigationDividerColorDark": "#0F1D2F",
+  "backgroundColor": "#FFFFFF",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://citizenz.vercel.app/icon-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "C:\\Users\\Admin\\citizen\\twa-build-new\\android.keystore",
+    "alias": "citizenz"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 2,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://citizenz.vercel.app/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://citizenz.vercel.app/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": [
+    {
+      "value": "F9:19:66:62:3D:C3:DB:94:3E:DC:7B:59:15:08:CF:CD:CF:3B:91:75:D9:A9:92:12:16:45:5F:5E:09:1C:67:A2"
+    }
+  ],
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "protocolHandlers": [],
+  "fileHandlers": [],
+  "launchHandlerClientMode": "",
+  "displayOverride": [],
+  "appVersion": "1.0.0"
+}

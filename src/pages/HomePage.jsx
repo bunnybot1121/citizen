@@ -67,7 +67,7 @@ export default function HomePage() {
         {
             id: 'mock-1',
             title: "Overflowing Garbage Bin",
-            sector: "Solid Waste Management",
+            sector: "Sewage Department",
             status: "pending",
             upvotes_count: 5,
             comments_count: 2,
@@ -77,7 +77,7 @@ export default function HomePage() {
         {
             id: 'mock-2',
             title: "Pothole on Main Road",
-            sector: "Roads",
+            sector: "Roads Department",
             status: "resolved",
             upvotes_count: 12,
             comments_count: 4,
