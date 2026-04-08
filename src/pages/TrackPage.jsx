@@ -168,14 +168,20 @@ export default function TrackPage() {
                                     <StatusStep 
                                         icon={User} 
                                         title="Assigned to Field Staff" 
-                                        active={!!issue.assigned_worker_id || ['in_progress', 'in-progress', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
-                                        current={issue.assigned_worker_id && !['in_progress', 'in-progress', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
+                                        active={!!issue.assigned_worker_id || ['in_progress', 'in-progress', 'verified', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
+                                        current={issue.assigned_worker_id && !['in_progress', 'in-progress', 'verified', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
                                     />
                                     <StatusStep 
                                         icon={Activity} 
                                         title="In Progress (Processing)" 
-                                        active={['in_progress', 'in-progress', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
+                                        active={['in_progress', 'in-progress', 'verified', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
                                         current={['in_progress', 'in-progress'].includes(issue.status?.toLowerCase())} 
+                                    />
+                                    <StatusStep 
+                                        icon={CheckCircle2} 
+                                        title="Verified" 
+                                        active={['verified', 'resolved', 'done', 'closed'].includes(issue.status?.toLowerCase())} 
+                                        current={['verified'].includes(issue.status?.toLowerCase())} 
                                     />
                                     <StatusStep 
                                         icon={CheckCircle2} 
