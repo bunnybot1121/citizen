@@ -5,6 +5,7 @@ import EnhancedCameraCapture from '../components/camera/EnhancedCameraCapture';
 import StaticMapPreview from '../components/maps/StaticMapPreview';
 import { useAuth } from '../context/AuthContext';
 import { issueService } from '../services/issueService';
+import { supabase } from '../services/supabase';
 import toast from 'react-hot-toast';
 import { Button, Card, Input } from '../components/ui';
 
@@ -63,8 +64,7 @@ export default function ReportPage() {
             toast.loading('Uploading photo...', { id: 'submit' });
             let photoUrl;
             try {
-                const { issueService: svc } = await import('../services/issueService');
-                photoUrl = await svc.uploadPhoto(photoBlob, citizen?.id || 'anonymous');
+                photoUrl = await issueService.uploadPhoto(photoBlob, citizen?.id || 'anonymous');
             } catch (err) {
                 toast.error(`Upload failed: ${err.message}`, { id: 'submit' });
                 return;
@@ -72,7 +72,6 @@ export default function ReportPage() {
 
             // Step 3: Insert into database
             toast.loading('Saving report...', { id: 'submit' });
-            const { supabase } = await import('../services/supabase');
             const { data, error } = await supabase
                 .from('issues')
                 .insert({

@@ -16,12 +16,25 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-DMsSI4NA.js"></script>
+  <script type="module" crossorigin src="/assets/index-DePT1zrn.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-C8kUVEbB.css">
 </head>
 
 <body>
   <div id="root"></div>
+  <script>
+    // Handle stale chunk errors after redeployment — auto-reload once
+    window.addEventListener('vite:preloadError', (event) => {
+      event.preventDefault();
+      window.location.reload();
+    });
+    // Also catch generic dynamic import failures
+    window.addEventListener('error', (event) => {
+      if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
+        window.location.reload();
+      }
+    });
+  </script>
 </body>
 
 </html>

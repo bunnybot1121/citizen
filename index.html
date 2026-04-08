@@ -20,6 +20,19 @@
 
 <body>
   <div id="root"></div>
+  <script>
+    // Handle stale chunk errors after redeployment — auto-reload once
+    window.addEventListener('vite:preloadError', (event) => {
+      event.preventDefault();
+      window.location.reload();
+    });
+    // Also catch generic dynamic import failures
+    window.addEventListener('error', (event) => {
+      if (event.message && event.message.includes('Failed to fetch dynamically imported module')) {
+        window.location.reload();
+      }
+    });
+  </script>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 
